@@ -1,65 +1,140 @@
-# Jellyfin True Music Library
+<p align="center">
+  <img src="icon.png" width="520" alt="Jellyfin True Music Library">
+</p>
 
-A single "Artists" tab, listing only the main artists of albums, singles and EPs, chosen from the library's metadata providers (MusicBrainz, TheAudioDB…). Featured artists stay credited on their tracks without cluttering the list. A "Repair" action fixes the existing library, and later scans keep the result.
+<p align="center">
+  <a href="https://github.com/k1k4k/jellyfin-true-music-library/releases/latest"><img src="https://img.shields.io/github/v/release/k1k4k/jellyfin-true-music-library?label=version&color=00a4dc" alt="Latest release"></a>
+  <img src="https://img.shields.io/badge/Jellyfin-12.x%20%7C%2010.11-00a4dc?logo=jellyfin&logoColor=white" alt="Jellyfin 12.x | 10.11">
+  <a href="https://github.com/k1k4k/jellyfin-true-music-library/releases"><img src="https://img.shields.io/github/downloads/k1k4k/jellyfin-true-music-library/total?color=aa5cc3" alt="Downloads"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/k1k4k/jellyfin-true-music-library?color=555" alt="MIT license"></a>
+</p>
 
-[Version française](README.fr.md)
+<p align="center">
+  <b>One "Artists" list, with only the artists who made the albums.</b><br>
+  Featured artists stay credited on their tracks, without cluttering the list or the search.
+</p>
 
-## Why
+<p align="center">
+  <a href="#installation">Installation</a> ·
+  <a href="#features">Features</a> ·
+  <a href="#troubleshooting">Troubleshooting</a> ·
+  <a href="README.fr.md">Version française</a>
+</p>
 
-Out of the box, Jellyfin lists in "Artists" every name found in a tag: `Artist A;Artist B`, `Artist A feat. Artist C`, every guest of every compilation… "Album Artists" is not much better when album artist tags are inconsistent. On a large library, the list easily ends up several times longer than the number of actual main artists.
+Out of the box, Jellyfin lists in "Artists" every name found in a tag: `Artist A;Artist B`, `Artist A feat. Artist C`, every guest of every compilation… "Album Artists" is not much better when album artist tags are inconsistent. On a large library, the list easily ends up several times longer than the number of actual artists.
 
-## What it does
+## Features
 
-- **Analyze** (read-only): for each release, the main artists, taken from the library's album metadata providers in their configured order (MusicBrainz release credits, then TheAudioDB…), then from tags, then from the artist folder. A report shows before / after, sources, confidence and disagreements.
-- **Repair**: applies the analysis. Album artists = main artists; track artists split (`A;B`, `feat.`, `&`…) with guests kept; one entry per artist, named the way MusicBrainz credits it most often in your library; stray `A;B` entries removed. A snapshot is written before anything changes.
-- **Persistence**: once repaired, the library stays repaired. Scans and "Replace all metadata" keep the decided artists (no network during the scan), and new albums are resolved right after each scan.
-- **Restore**: puts every item back the way it was before the first repair, or the way its file reads today if the file was re-read since, and stops the persistence.
-- **One "Artists" tab**, once the library is repaired:
-  - the server serves `/Artists` as `/Artists/AlbumArtists`, for every client;
-  - guests no longer show up in search results nor in the artist lists of other clients (`/Search/Hints`, `/Items`); their page stays reachable from their tracks;
-  - the web interface hides the duplicate "Album Artists" tab.
+### Analyze
 
-Nothing is written to audio files. No metadata is locked: uninstalling the plugin and running "Replace all metadata" gives you Jellyfin's own behaviour back.
+- For each album, single or EP, the **main artists** are taken from the library's metadata providers, in their configured order (MusicBrainz release credits, then TheAudioDB…), then from the tags, then from the artist folder.
+- **Collaborations** (`A & B`) show up under each artist; **compilations and soundtracks** under the folder artist.
+- A report shows, for every album, the current and proposed artists, the source, the confidence and the disagreements with the tags and the folder. Nothing is changed in Jellyfin.
+- **Manual choice**: unfold an album in the report to impose its main artists.
 
-## Install
+### Repair
 
-**Back up Jellyfin before the first repair** (12.x: Dashboard → Backups).
+- Album artists = main artists; track artists split (`A;B`, `feat.`, `&`…), guests kept on their tracks.
+- One entry per artist, named the way MusicBrainz credits it most often in your library; stray entries such as `A;B` are removed.
+- A snapshot is saved before anything is written. **Restore** puts everything back the way Jellyfin had it.
 
-The plugin is in the k1k4k plugin repository: **Dashboard → Plugins → Manage Repositories → `+`**
+### Afterwards
 
-| Jellyfin | URL |
-|---|---|
-| 12.x | `https://k1k4k.github.io/jellyfin-plugins/manifest.json` |
-| 10.11.x | `https://k1k4k.github.io/jellyfin-plugins/manifest-10.11.json` |
+- **The library stays repaired**: scans and "Replace all metadata" keep the decided artists, without network access during the scan, and new albums are resolved right after each scan.
+- **One "Artists" list for every client**: the server serves "Artists" as "Album Artists", guests no longer show up in search results nor in the artist lists of other clients, and their page stays reachable from their tracks.
+- The web interface hides the duplicate "Album Artists" tab.
 
-Then **Plugins → Catalog → Jellyfin True Music Library → Install**, and restart Jellyfin.
+### Everywhere
 
-Without the catalog, the install scripts copy the plugin into Jellyfin's `plugins` folder (latest release, a release zip, or built from these sources), picking the right build for your server version:
+- No audio file is ever changed and no metadata is locked: "Restore", or uninstalling, gives you Jellyfin's own behavior back.
+- English or French: the settings page follows the web interface language, the report and the scheduled tasks follow the server language.
+
+## Installation
+
+### Plugin (recommended)
+
+1. **Dashboard → Plugins → Manage Repositories → `+`**, then the k1k4k plugin repository URL matching your Jellyfin:
+
+   | Jellyfin | Repository URL |
+   |---|---|
+   | 12.x | `https://k1k4k.github.io/jellyfin-plugins/manifest.json` |
+   | 10.11.x | `https://k1k4k.github.io/jellyfin-plugins/manifest-10.11.json` |
+
+   This repository lists every k1k4k plugin (Background Play, Player Queue, True Music Library…). If you already added it, or the Player Queue repository, there's nothing to do.
+
+2. **Plugins → Available → Jellyfin True Music Library → Install**, then restart Jellyfin.
+3. **Back up Jellyfin** (12.x: Dashboard → Backups), then open **Dashboard → Plugins → Jellyfin True Music Library**: **Analyze**, read the report, **Repair**.
+
+Until the first repair, the plugin changes nothing: neither the lists, nor the search, nor the scans. New versions show up in the dashboard.
+
+<details>
+<summary><b>Other methods (without the repository)</b></summary>
+
+#### Plugin, by hand
+
+Download the zip from the [latest release](https://github.com/k1k4k/jellyfin-true-music-library/releases/latest) (`_jf12` for Jellyfin 12, `_jf10` for 10.11), unzip it into `<config>/plugins/Jellyfin True Music Library/` and restart Jellyfin.
+
+#### Install script
+
+Copies the plugin into Jellyfin's `plugins` folder (latest release, a release zip, or built from these sources) and picks the right build for your server version.
 
 ```powershell
-.\install.ps1                                   # Windows, local Jellyfin
-.\install.ps1 -PluginsDir "\\SERVER\jellyfin\plugins" -ServerUrl "http://SERVER:8096"
-.\install.ps1 -Build                            # from the sources (.NET SDK 10, or 9 for 10.11)
+# Windows
+.\install.ps1                                                                  # local Jellyfin
+.\install.ps1 -PluginsDir "\\SERVER\plugins" -ServerUrl "http://SERVER:8096"   # network share
+.\install.ps1 -Build                                                           # from the sources (.NET SDK 10, or 9 for 10.11)
 .\install.ps1 -Uninstall
 ```
 
 ```bash
-sudo ./install.sh --restart                     # Linux server (/var/lib/jellyfin/plugins)
+# Linux (plugins in /var/lib/jellyfin/plugins)
+sudo ./install.sh --restart
 sudo ./install.sh --uninstall
 ```
 
 Then restart Jellyfin.
 
-## Use
+</details>
 
-**Dashboard → Plugins → Jellyfin True Music Library**: **Analyze**, read the report, **Repair**. "Restore" undoes everything. The three actions also exist as scheduled tasks. In the report, unfold an album to impose its main artists by hand.
+## Compatibility
 
-Settings: collaborations (`A & B` under both artists, or the first one only), compilations and soundtracks (folder artist, "Various Artists", or none), name spelling (MusicBrainz, folder, tags), guest join phrases, names never to split (`AC/DC`, `Earth, Wind & Fire`…), persistence, single "Artists" tab, guests hidden from search, "Album Artists" tab hidden in the web interface.
+| | |
+|---|---|
+| **Jellyfin 12.x** | tested (12.1.0) |
+| **Jellyfin 10.11** | tested (10.11.11) |
+| **Web interface** (classic and new layout) | yes |
+| **Apps that show the web UI** (Jellyfin Media Player, Android app) | should work, untested |
+| **Other clients** (Finamp, native apps…) | the lists and search they get from the server are cleaned up; untested |
+| **Metadata providers** | MusicBrainz (credits read directly), and every album provider enabled in the library (TheAudioDB…) |
 
-## Limits
+The first analysis queries MusicBrainz at one request per second (about 4 minutes for 200 albums); later ones use the cache.
 
-- Two different artists with the same name end up on one entry.
-- A wrong MusicBrainz match gives a wrong main artist: the report shows the confidence and the disagreements with the tags and the folder.
-- A retagged file is only re-read by "Replace all metadata", as in Jellyfin without the plugin.
+## Troubleshooting
 
-Jellyfin 12.x and 10.11. MIT license.
+- **Nothing changed after "Analyze"**: normal, the analysis is read-only. "Repair" applies it.
+- **Guests still show up in "Artists" or in the search**: the single list only applies once the library is repaired. The settings page shows whether the persistence is active; reload the web page (`Ctrl+F5`).
+- **An album has the wrong main artist**: unfold it in the report to see the source and the disagreements, then impose its artists by hand. It applies at the next analysis and repair, and at the next scan once the library is repaired.
+- **The "Album Artists" tab is still there**: reload the web page (`Ctrl+F5`) and check the setting "Hide the Album Artists tab".
+- **To undo everything**: "Restore" on the settings page, then uninstall if you wish.
+
+<details>
+<summary><b>Development</b></summary>
+
+#### Plugin
+
+`Jellyfin.Plugin.TrueMusicLibrary/`: one source, two targets, `-p:JellyfinTarget=jf12` (Jellyfin 12, .NET 10, default) and `jf10` (Jellyfin 10.11, .NET 9). Without a local SDK:
+
+```bash
+docker run --rm -v "$PWD:/src" -w /src mcr.microsoft.com/dotnet/sdk:10.0 dotnet build Jellyfin.Plugin.TrueMusicLibrary/Jellyfin.Plugin.TrueMusicLibrary.csproj -c Release -o out/jf12
+```
+
+#### Releasing
+
+1. Bump `<Version>` / `<AssemblyVersion>` in the csproj; add a `## X.Y.Z` section to `CHANGELOG.md`.
+2. `git tag vX.Y.Z && git push origin vX.Y.Z`: the **Release** workflow builds both targets, publishes the release and updates the manifests on `main`. The central [`jellyfin-plugins`](https://github.com/k1k4k/jellyfin-plugins) repository picks them up on its next run (hourly, or right away with the `PLUGINS_REPO_TOKEN` secret).
+
+</details>
+
+## License
+
+MIT, see [LICENSE](LICENSE).
