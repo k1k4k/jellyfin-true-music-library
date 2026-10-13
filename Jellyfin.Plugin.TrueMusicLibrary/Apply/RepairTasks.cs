@@ -34,13 +34,13 @@ public sealed class RepairTask : IScheduledTask
         _logger = logger;
     }
 
-    public string Name => "Réparer la médiathèque musicale";
+    public string Name => Messages.RepairName;
 
     public string Key => TaskKey;
 
-    public string Description => "True Music Library : applique les artistes principaux proposés par l'analyse. Un instantané est enregistré avant toute écriture : « Restaurer » revient en arrière.";
+    public string Description => Messages.RepairDescription;
 
-    public string Category => "True Music Library";
+    public string Category => Messages.Category;
 
     public IEnumerable<TaskTriggerInfo> GetDefaultTriggers() => [];
 
@@ -49,7 +49,7 @@ public sealed class RepairTask : IScheduledTask
         using var gate = await TaskGate.EnterAsync(cancellationToken).ConfigureAwait(false);
         if (_libraryManager.IsScanRunning)
         {
-            throw new InvalidOperationException("Un scan de bibliothèque est en cours : relancez la réparation quand il sera terminé.");
+            throw new InvalidOperationException(Messages.ScanRunningRepair);
         }
 
         // Valeurs remplacées par les fournisseurs depuis le dernier scan : enregistrées avant, pour que la restauration
@@ -110,13 +110,13 @@ public sealed class RestoreTask : IScheduledTask
         _logger = logger;
     }
 
-    public string Name => "Restaurer la médiathèque musicale";
+    public string Name => Messages.RestoreName;
 
     public string Key => TaskKey;
 
-    public string Description => "True Music Library : remet les artistes tels qu'ils étaient avant la première réparation, et arrête de les corriger pendant les scans.";
+    public string Description => Messages.RestoreDescription;
 
-    public string Category => "True Music Library";
+    public string Category => Messages.Category;
 
     public IEnumerable<TaskTriggerInfo> GetDefaultTriggers() => [];
 
@@ -125,7 +125,7 @@ public sealed class RestoreTask : IScheduledTask
         using var gate = await TaskGate.EnterAsync(cancellationToken).ConfigureAwait(false);
         if (_libraryManager.IsScanRunning)
         {
-            throw new InvalidOperationException("Un scan de bibliothèque est en cours : relancez la restauration quand il sera terminé.");
+            throw new InvalidOperationException(Messages.ScanRunningRestore);
         }
 
         // Plus aucune décision appliquée pendant les scans ; les dernières valeurs remplacées par les fournisseurs sont
@@ -138,7 +138,7 @@ public sealed class RestoreTask : IScheduledTask
         var snapshots = _store.LoadSnapshots().Where(s => !s.Restored).ToList();
         if (snapshots.Count == 0)
         {
-            throw new InvalidOperationException("Aucune réparation à restaurer.");
+            throw new InvalidOperationException(Messages.NothingToRestore);
         }
 
         var result = await _applier.RestoreAsync(snapshots, RepairTask.Step(progress, 0, 90), cancellationToken).ConfigureAwait(false);

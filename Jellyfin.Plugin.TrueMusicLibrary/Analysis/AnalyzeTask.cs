@@ -1,3 +1,4 @@
+using Jellyfin.Plugin.TrueMusicLibrary.Resolution;
 using MediaBrowser.Model.Tasks;
 
 namespace Jellyfin.Plugin.TrueMusicLibrary.Analysis;
@@ -18,13 +19,13 @@ public sealed class AnalyzeTask : IScheduledTask
         _analysis = analysis;
     }
 
-    public string Name => "Analyser la médiathèque musicale";
+    public string Name => Messages.AnalyzeName;
 
     public string Key => TaskKey;
 
-    public string Description => "True Music Library : calcule les artistes principaux de chaque album et le rapport, sans rien modifier.";
+    public string Description => Messages.AnalyzeDescription;
 
-    public string Category => "True Music Library";
+    public string Category => Messages.Category;
 
     public IEnumerable<TaskTriggerInfo> GetDefaultTriggers() => [];
 

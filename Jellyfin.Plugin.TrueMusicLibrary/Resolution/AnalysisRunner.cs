@@ -59,7 +59,7 @@ public sealed class AnalysisRunner
                 }
                 else
                 {
-                    notes.Add("MusicBrainz indisponible pour cette analyse.");
+                    notes.Add(Messages.MusicBrainzUnavailable);
                 }
             }
             else if (input.ProviderSources.TryGetValue(fetcher, out var source))
@@ -68,7 +68,7 @@ public sealed class AnalysisRunner
             }
             else
             {
-                notes.Add($"Fournisseur « {fetcher} » indisponible pour cette analyse : ignoré.");
+                notes.Add(Messages.ProviderUnavailable(fetcher));
             }
         }
 
@@ -107,7 +107,7 @@ public sealed class AnalysisRunner
             {
                 _logger.LogError(ex, "Analyse de l'album {Album} impossible", input.Albums[i].Path);
                 var failed = new AlbumDecision { AlbumId = input.Albums[i].Id, Source = DecisionSource.None, Flags = DecisionFlags.NoSource };
-                failed.Notes.Add("Erreur pendant l'analyse : " + ex.Message);
+                failed.Notes.Add(Messages.AnalysisError(ex.Message));
                 decisions.Add(failed);
             }
 

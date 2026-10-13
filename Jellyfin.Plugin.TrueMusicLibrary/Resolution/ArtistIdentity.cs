@@ -249,7 +249,7 @@ public sealed class ArtistIdentity
             return mbid;
         }
 
-        _suspicious.Add($"« {name.Trim()} » est rattaché à l'artiste MusicBrainz « {artist.Name} » ({mbid}) : identifiant ignoré.");
+        _suspicious.Add(Messages.SuspiciousMbid(name.Trim(), artist.Name ?? string.Empty, mbid));
         return null;
     }
 

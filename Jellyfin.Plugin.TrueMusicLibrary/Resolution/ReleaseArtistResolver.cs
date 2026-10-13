@@ -49,7 +49,7 @@ public sealed class ReleaseArtistResolver
             decision.Flags |= DecisionFlags.Locked;
             decision.Confidence = Confidence.High;
             decision.MainArtists = album.AlbumArtists.Select(n => new ArtistRef(n)).ToList();
-            decision.Notes.Add("Album verrouillé dans Jellyfin : rien n'est modifié.");
+            decision.Notes.Add(Messages.AlbumLocked);
             foreach (var track in album.Tracks)
             {
                 decision.Tracks.Add(Unchanged(track));
@@ -70,7 +70,7 @@ public sealed class ReleaseArtistResolver
             decision.Confidence = Confidence.High;
             if (!string.IsNullOrWhiteSpace(manual.Note))
             {
-                decision.Notes.Add("Override : " + manual.Note);
+                decision.Notes.Add(Messages.Override(manual.Note));
             }
         }
 
@@ -93,7 +93,7 @@ public sealed class ReleaseArtistResolver
             {
                 // Release identifiée par recherche de nom (fournisseur MusicBrainz de Jellyfin) qui ne correspond pas :
                 // ex. dossier compilation pris pour le single d'un de ses artistes. On l'écarte et on le dit.
-                decision.Notes.Add($"{result.SourceName} : release « {result.ReleaseTitle} » écartée ({result.MatchedTracks}/{album.Tracks.Count} pistes reconnues, artiste sans rapport avec le dossier ni les tags)");
+                decision.Notes.Add(Messages.ReleaseRejected(result.SourceName, result.ReleaseTitle, result.MatchedTracks, album.Tracks.Count));
                 decision.Flags |= DecisionFlags.Disagreement;
                 continue;
             }
@@ -175,7 +175,7 @@ public sealed class ReleaseArtistResolver
             decision.Source = DecisionSource.None;
             decision.Confidence = Confidence.Low;
             decision.Flags |= DecisionFlags.NoSource;
-            decision.Notes.Add("Aucune source exploitable : artistes actuels gardés.");
+            decision.Notes.Add(Messages.NoSource);
             mains = album.AlbumArtists.Select(n => _identity.Resolve(n)).ToList();
         }
 
@@ -333,14 +333,14 @@ public sealed class ReleaseArtistResolver
         if (!compilation && album.FolderArtist is not null && decision.Source is not (DecisionSource.Folder or DecisionSource.Override)
             && !decision.MainArtists.Any(m => SameArtist(m, album.FolderArtist, album.FolderArtistMbid)))
         {
-            decision.Notes.Add("Dossier : " + album.FolderArtist);
+            decision.Notes.Add(Messages.FolderDisagrees(album.FolderArtist));
             decision.Flags |= DecisionFlags.Disagreement;
         }
 
         if (decision.Source is DecisionSource.Provider && tags.Mains is { Count: > 0 } && !compilation
             && !tags.Mains.All(t => decision.MainArtists.Any(m => SameArtist(m, t.Name, t.Mbid))))
         {
-            decision.Notes.Add("Tags : " + string.Join(", ", tags.Mains.Select(t => t.Name)));
+            decision.Notes.Add(Messages.TagsDisagree(string.Join(", ", tags.Mains.Select(t => t.Name))));
             decision.Flags |= DecisionFlags.Disagreement;
         }
     }

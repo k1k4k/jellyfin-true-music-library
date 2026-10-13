@@ -11,7 +11,7 @@
             #TrueMusicLibraryConfigPage .tml-card b { display: block; font-size: 1.6em; }
             #TrueMusicLibraryConfigPage .tml-chips span { display: inline-block; background: rgba(127,127,127,.18); border-radius: 1em; padding: .1em .7em; margin: .15em; font-size: .9em; }
             #TrueMusicLibraryConfigPage .tml-chips span.tml-warn { background: rgba(255,170,0,.35); }
-            #TrueMusicLibraryConfigPage .tml-filters button { margin: .2em .3em .2em 0; }
+            #TrueMusicLibraryConfigPage .tml-filters button { margin: .2em .3em .2em 0; background: rgba(127,127,127,.22); color: inherit; }
             #TrueMusicLibraryConfigPage .tml-filters button.tml-on { background: #00a4dc; color: #fff; }
             #TrueMusicLibraryConfigPage table.tml-table { width: 100%; border-collapse: collapse; font-size: .92em; }
             #TrueMusicLibraryConfigPage table.tml-table th, #TrueMusicLibraryConfigPage table.tml-table td { text-align: left; padding: .35em .5em; border-bottom: 1px solid rgba(127,127,127,.2); vertical-align: top; }
@@ -20,49 +20,40 @@
             #TrueMusicLibraryConfigPage tr.tml-tracks td { background: rgba(127,127,127,.06); }
             #TrueMusicLibraryConfigPage .tml-flag { display: inline-block; font-size: .8em; border-radius: .3em; padding: 0 .4em; margin: 0 .2em .2em 0; background: rgba(127,127,127,.25); }
             #TrueMusicLibraryConfigPage .tml-flag-Disagreement, #TrueMusicLibraryConfigPage .tml-flag-NoSource { background: rgba(255,170,0,.45); }
+            #TrueMusicLibraryConfigPage .tml-flag-Override { background: rgba(0,164,220,.45); }
             #TrueMusicLibraryConfigPage .tml-same { opacity: .55; }
             #TrueMusicLibraryConfigPage .tml-new { color: #52b54b; }
             #TrueMusicLibraryConfigPage .tml-old { text-decoration: line-through; opacity: .6; }
+            #TrueMusicLibraryConfigPage .tml-override { display: flex; flex-wrap: wrap; align-items: center; gap: .5em; margin: .3em 0 .8em; }
+            #TrueMusicLibraryConfigPage .tml-override input { flex: 1 1 18em; min-width: 0; padding: .45em .6em; border-radius: .3em; border: 1px solid rgba(127,127,127,.4); background: rgba(127,127,127,.12); color: inherit; font: inherit; }
+            #TrueMusicLibraryConfigPage .tml-override button { margin: 0; }
+            #TrueMusicLibraryConfigPage textarea { display: block; width: 100%; box-sizing: border-box; padding: .5em .6em; border-radius: .3em; border: 1px solid rgba(127,127,127,.4); background: rgba(127,127,127,.12); color: inherit; font: inherit; resize: vertical; }
+            #TrueMusicLibraryConfigPage .textareaLabel { display: block; margin-bottom: .3em; }
         </style>
         <div data-role="content">
             <div class="content-primary">
                 <div class="verticalSection">
                     <h2 class="sectionTitle">True Music Library</h2>
-                    <p>
-                        Un seul onglet « Artistes », avec seulement les artistes principaux des albums, singles et EP.
-                        Version de développement : analyse, réparation, restauration et persistance aux scans.
-                    </p>
+                    <p data-i18n="intro"></p>
                     <p id="TrueMusicLibraryStatus" class="fieldDescription"></p>
                     <p id="tmlPersistence" class="fieldDescription"></p>
                 </div>
 
                 <!-- ============ Analyse ============ -->
                 <div class="verticalSection">
-                    <h2 class="sectionTitle">Analyse</h2>
-                    <p class="fieldDescription">
-                        Calcule l'artiste principal de chaque album avec les fournisseurs de métadonnées de la bibliothèque, dans leur ordre
-                        (puis les tags, puis le dossier). <b>Rien n'est modifié dans Jellyfin.</b> Le premier passage interroge MusicBrainz
-                        à une requête par seconde ; les suivants utilisent le cache.
-                    </p>
-                    <button is="emby-button" type="button" id="btnAnalyze" class="raised button-submit emby-button"><span>Analyser</span></button>
+                    <h2 class="sectionTitle" data-i18n="analyzeTitle"></h2>
+                    <p class="fieldDescription" data-i18n-html="analyzeHelp"></p>
+                    <button is="emby-button" type="button" id="btnAnalyze" class="raised button-submit emby-button"><span data-i18n="analyze"></span></button>
                     <p id="tmlAnalysisState" class="fieldDescription"></p>
                 </div>
 
                 <!-- ============ Réparer / Restaurer ============ -->
                 <div class="verticalSection">
-                    <h2 class="sectionTitle">Réparer</h2>
-                    <p class="fieldDescription">
-                        Applique les artistes proposés par l'analyse (refaite juste avant) : artistes d'album, artistes des pistes, fiches renommées,
-                        fiches parasites supprimées. <b>Avant la première réparation, faites une sauvegarde Jellyfin</b> (Tableau de bord → Sauvegardes).
-                        Un instantané est enregistré avant toute écriture : « Restaurer » remet l'état d'avant. Aucun fichier audio n'est modifié.
-                    </p>
-                    <p class="fieldDescription">
-                        Ensuite, la médiathèque reste réparée : les scans et « Remplacer toutes les métadonnées » gardent les artistes décidés,
-                        et les nouveaux albums sont résolus après chaque scan. « Restaurer » revient sur tout, y compris sur ces changements,
-                        et arrête la persistance.
-                    </p>
-                    <button is="emby-button" type="button" id="btnRepair" class="raised button-submit emby-button"><span>Réparer</span></button>
-                    <button is="emby-button" type="button" id="btnRestore" class="raised emby-button"><span>Restaurer</span></button>
+                    <h2 class="sectionTitle" data-i18n="repairTitle"></h2>
+                    <p class="fieldDescription" data-i18n-html="repairHelp"></p>
+                    <p class="fieldDescription" data-i18n="repairAfter"></p>
+                    <button is="emby-button" type="button" id="btnRepair" class="raised button-submit emby-button"><span data-i18n="repair"></span></button>
+                    <button is="emby-button" type="button" id="btnRestore" class="raised emby-button"><span data-i18n="restore"></span></button>
                     <div id="tmlLastOperation"></div>
                 </div>
 
@@ -72,82 +63,74 @@
 
                 <!-- ============ Réglages ============ -->
                 <form id="TrueMusicLibraryConfigForm" class="verticalSection">
-                    <h2 class="sectionTitle">Réglages</h2>
+                    <h2 class="sectionTitle" data-i18n="settingsTitle"></h2>
 
                     <div class="selectContainer">
-                        <select is="emby-select" id="selCollaboration" label="Collaborations « A & B »">
-                            <option value="Both">Les deux sont principaux : l'album apparaît chez chacun</option>
-                            <option value="FirstOnly">Premier crédité seulement (les autres dans « Apparaît sur »)</option>
+                        <select is="emby-select" id="selCollaboration" data-i18n-label="collabLabel">
+                            <option value="Both" data-i18n="collabBoth"></option>
+                            <option value="FirstOnly" data-i18n="collabFirst"></option>
                         </select>
                     </div>
                     <div class="selectContainer">
-                        <select is="emby-select" id="selCompilation" label="Compilations, BO, playlists">
-                            <option value="FolderArtist">Artiste du dossier, sinon « Artistes variés »</option>
-                            <option value="VariousArtists">Toujours « Artistes variés »</option>
-                            <option value="None">Aucun artiste</option>
+                        <select is="emby-select" id="selCompilation" data-i18n-label="compilationLabel">
+                            <option value="FolderArtist" data-i18n="compilationFolder"></option>
+                            <option value="VariousArtists" data-i18n="compilationVarious"></option>
+                            <option value="None" data-i18n="compilationNone"></option>
                         </select>
                     </div>
                     <div class="selectContainer">
-                        <select is="emby-select" id="selDisplayName" label="Écriture des noms">
-                            <option value="MusicBrainz">MusicBrainz (alias latin si besoin)</option>
-                            <option value="Folder">Nom du dossier</option>
-                            <option value="Tag">Écriture la plus fréquente dans les tags</option>
+                        <select is="emby-select" id="selDisplayName" data-i18n-label="displayLabel">
+                            <option value="MusicBrainz" data-i18n="displayMusicBrainz"></option>
+                            <option value="Folder" data-i18n="displayFolder"></option>
+                            <option value="Tag" data-i18n="displayTag"></option>
                         </select>
                     </div>
                     <div class="inputContainer">
-                        <input is="emby-input" id="txtVariousArtists" type="text" label="Nom des compilations sans dossier artiste" />
+                        <input is="emby-input" id="txtVariousArtists" type="text" data-i18n-label="variousLabel" />
                     </div>
                     <div class="inputContainer">
-                        <textarea is="emby-textarea" id="txtGuestJoins" label="Jointures d'invité (une par ligne)" rows="4"></textarea>
+                        <label class="textareaLabel" for="txtGuestJoins" data-i18n="joinsLabel"></label>
+                        <textarea is="emby-textarea" id="txtGuestJoins" rows="4"></textarea>
                     </div>
                     <div class="inputContainer">
-                        <textarea is="emby-textarea" id="txtWhitelist" label="Noms à ne jamais couper (un par ligne)" rows="6"></textarea>
+                        <label class="textareaLabel" for="txtWhitelist" data-i18n="whitelistLabel"></label>
+                        <textarea is="emby-textarea" id="txtWhitelist" rows="6"></textarea>
                     </div>
 
                     <div class="checkboxContainer checkboxContainer-withDescription">
                         <label class="emby-checkbox-label">
                             <input id="chkPersistence" type="checkbox" is="emby-checkbox" />
-                            <span>Garder la médiathèque réparée</span>
+                            <span data-i18n="persistenceLabel"></span>
                         </label>
-                        <div class="fieldDescription checkboxFieldDescription">
-                            Après « Réparer » : les scans et les actualisations appliquent ces réglages, sans réseau pendant le scan ;
-                            les nouveaux albums sont résolus juste après (MusicBrainz compris). Sans effet tant que la médiathèque n'a pas été réparée.
-                        </div>
+                        <div class="fieldDescription checkboxFieldDescription" data-i18n="persistenceHelp"></div>
                     </div>
 
                     <div class="checkboxContainer checkboxContainer-withDescription">
                         <label class="emby-checkbox-label">
                             <input id="chkRewrite" type="checkbox" is="emby-checkbox" />
-                            <span>Onglet unique côté serveur</span>
+                            <span data-i18n="rewriteLabel"></span>
                         </label>
-                        <div class="fieldDescription checkboxFieldDescription">
-                            Une fois la médiathèque réparée, la liste « Artistes » est servie comme « Artistes de l'album », pour tous les clients. Effet immédiat.
-                        </div>
+                        <div class="fieldDescription checkboxFieldDescription" data-i18n="rewriteHelp"></div>
                     </div>
 
                     <div class="checkboxContainer checkboxContainer-withDescription">
                         <label class="emby-checkbox-label">
                             <input id="chkHideGuests" type="checkbox" is="emby-checkbox" />
-                            <span>Invités retirés de la recherche et des listes</span>
+                            <span data-i18n="guestsLabel"></span>
                         </label>
-                        <div class="fieldDescription checkboxFieldDescription">
-                            Une fois la médiathèque réparée, les artistes qui ne sont principaux d'aucune sortie n'apparaissent plus dans la
-                            recherche ni dans les listes d'artistes des autres clients. Leur page reste accessible depuis leurs pistes.
-                        </div>
+                        <div class="fieldDescription checkboxFieldDescription" data-i18n="guestsHelp"></div>
                     </div>
 
                     <div class="checkboxContainer checkboxContainer-withDescription">
                         <label class="emby-checkbox-label">
                             <input id="chkHideTab" type="checkbox" is="emby-checkbox" />
-                            <span>Cacher l'onglet « Artistes de l'album » (interface web)</span>
+                            <span data-i18n="tabLabel"></span>
                         </label>
-                        <div class="fieldDescription checkboxFieldDescription">
-                            Une fois la médiathèque réparée, il ne montre plus que la même liste que « Artistes ». Rechargez la page web après un changement.
-                        </div>
+                        <div class="fieldDescription checkboxFieldDescription" data-i18n="tabHelp"></div>
                     </div>
 
                     <div>
-                        <button is="emby-button" type="submit" class="raised button-submit block emby-button"><span>Enregistrer</span></button>
+                        <button is="emby-button" type="submit" class="raised button-submit block emby-button"><span data-i18n="save"></span></button>
                     </div>
                 </form>
             </div>
@@ -159,14 +142,192 @@
                 var page = document.querySelector('#TrueMusicLibraryConfigPage');
                 var pollTimer = null;
                 var report = null;
+                var overrides = {};
                 var filter = 'changed';
 
-                var FLAG_LABELS = { Compilation: 'compilation', Collaboration: 'collaboration', NoSource: 'sans source', Locked: 'verrouillé', Disagreement: 'désaccord', Override: 'manuel' };
-                var FILTERS = [
-                    ['changed', 'Modifiés'], ['all', 'Tous'], ['Disagreement', 'Désaccords'], ['NoSource', 'Sans source'],
-                    ['Compilation', 'Compilations'], ['Collaboration', 'Collaborations'], ['Locked', 'Verrouillés'], ['low', 'Confiance basse']
-                ];
+                // ---------------------------------------------------------------- textes (français / anglais)
+                var STRINGS = {
+                    fr: {
+                        intro: 'Un seul onglet « Artistes », avec seulement les artistes principaux des albums, singles et EP.',
+                        analyzeTitle: 'Analyse',
+                        analyzeHelp: 'Calcule l\'artiste principal de chaque album avec les fournisseurs de métadonnées de la bibliothèque, dans leur ordre (puis les tags, puis le dossier). <b>Rien n\'est modifié dans Jellyfin.</b> Le premier passage interroge MusicBrainz à une requête par seconde ; les suivants utilisent le cache.',
+                        analyze: 'Analyser',
+                        repairTitle: 'Réparer',
+                        repairHelp: 'Applique les artistes proposés par l\'analyse (refaite juste avant) : artistes d\'album, artistes des pistes, fiches renommées, fiches parasites supprimées. <b>Avant la première réparation, faites une sauvegarde Jellyfin</b> (Tableau de bord → Sauvegardes). Un instantané est enregistré avant toute écriture : « Restaurer » remet l\'état d\'avant. Aucun fichier audio n\'est modifié.',
+                        repairAfter: 'Ensuite, la médiathèque reste réparée : les scans et « Remplacer toutes les métadonnées » gardent les artistes décidés, et les nouveaux albums sont résolus après chaque scan. « Restaurer » revient sur tout, y compris sur ces changements, et arrête la persistance.',
+                        repair: 'Réparer',
+                        restore: 'Restaurer',
+                        settingsTitle: 'Réglages',
+                        collabLabel: 'Collaborations « A & B »',
+                        collabBoth: 'Les deux sont principaux : l\'album apparaît chez chacun',
+                        collabFirst: 'Premier crédité seulement (les autres dans « Apparaît sur »)',
+                        compilationLabel: 'Compilations, BO, playlists',
+                        compilationFolder: 'Artiste du dossier, sinon « Artistes variés »',
+                        compilationVarious: 'Toujours « Artistes variés »',
+                        compilationNone: 'Aucun artiste',
+                        displayLabel: 'Écriture des noms',
+                        displayMusicBrainz: 'MusicBrainz (alias latin si besoin)',
+                        displayFolder: 'Nom du dossier',
+                        displayTag: 'Écriture la plus fréquente dans les tags',
+                        variousLabel: 'Nom des compilations sans dossier artiste (vide : « Artistes variés »)',
+                        joinsLabel: 'Jointures d\'invité (une par ligne)',
+                        whitelistLabel: 'Noms à ne jamais couper (un par ligne)',
+                        persistenceLabel: 'Garder la médiathèque réparée',
+                        persistenceHelp: 'Après « Réparer » : les scans et les actualisations appliquent ces réglages, sans réseau pendant le scan ; les nouveaux albums sont résolus juste après (MusicBrainz compris). Sans effet tant que la médiathèque n\'a pas été réparée.',
+                        rewriteLabel: 'Onglet unique côté serveur',
+                        rewriteHelp: 'Une fois la médiathèque réparée, la liste « Artistes » est servie comme « Artistes de l\'album », pour tous les clients. Effet immédiat.',
+                        guestsLabel: 'Invités retirés de la recherche et des listes',
+                        guestsHelp: 'Une fois la médiathèque réparée, les artistes qui ne sont principaux d\'aucune sortie n\'apparaissent plus dans la recherche ni dans les listes d\'artistes des autres clients. Leur page reste accessible depuis leurs pistes.',
+                        tabLabel: 'Cacher l\'onglet « Artistes de l\'album » (interface web)',
+                        tabHelp: 'Une fois la médiathèque réparée, il ne montre plus que la même liste que « Artistes ». Rechargez la page web après un changement.',
+                        save: 'Enregistrer',
+                        version: 'Version {0} ({1})',
+                        persistenceActive: 'Persistance active depuis le {0} : {1} albums suivis.',
+                        persistenceUpdated: ' Décisions mises à jour le {0}.',
+                        persistenceOff: 'Persistance coupée dans les réglages : les scans ne corrigent plus rien.',
+                        persistenceInactive: 'Persistance inactive : la médiathèque n\'a pas été réparée (ou a été restaurée).',
+                        flagCompilation: 'compilation', flagCollaboration: 'collaboration', flagNoSource: 'sans source', flagLocked: 'verrouillé', flagDisagreement: 'désaccord', flagOverride: 'manuel',
+                        filterChanged: 'Modifiés', filterAll: 'Tous', filterDisagreement: 'Désaccords', filterNoSource: 'Sans source', filterCompilation: 'Compilations', filterCollaboration: 'Collaborations', filterLocked: 'Verrouillés', filterOverride: 'Manuels', filterLow: 'Confiance basse',
+                        sourceTags: 'Tags', sourceFolder: 'Dossier', sourceTrackArtists: 'Artistes des pistes', sourceOverride: 'Manuel', sourceLocked: 'Verrouillé', sourceNone: 'Aucune', sourceProvider: 'Fournisseur',
+                        statusCompleted: 'terminée', statusFailed: 'échec', statusCancelled: 'annulée', statusAborted: 'interrompue',
+                        confHigh: 'haute', confMedium: 'moyenne', confLow: 'basse',
+                        colTrack: 'Piste', colTrackArtists: 'Artistes (avant → après)', colCredit: 'Crédit',
+                        cardArtists: 'onglet « Artistes »', cardAlbumArtists: '« Artistes de l\'album » aujourd\'hui', cardAlbums: 'albums modifiés', cardTracks: 'pistes modifiées', cardDisagreements: 'désaccords',
+                        fetchers: 'Fournisseurs : {0} — sources des décisions : {1}',
+                        proposed: 'Artistes proposés ({0})',
+                        albumsCount: '{0} album(s)',
+                        leaving: 'Quittent la liste : {0} invités (fiche gardée), {1} fusionnées, {2} fiches parasites (supprimées par la réparation)',
+                        guests: 'Invités :', merged: 'Fusionnées (même artiste, autre nom) :', stray: 'Parasites :', favorite: 'favori', played: 'écouté',
+                        renamed: 'Fiches renommées ({0})',
+                        colAlbum: 'Album', colCurrent: 'Actuel', colProposed: 'Proposé', colSource: 'Source', colNotes: 'Remarques',
+                        noAlbums: 'Aucun album pour ce filtre.',
+                        noAnalysis: 'Pas encore d\'analyse.',
+                        analysisOf: 'Analyse du {0} — MusicBrainz : {1} requêtes, {2} en cache, {3} échecs.',
+                        taskAnalyze: 'Analyse', taskRepair: 'Réparation', taskRestore: 'Restauration',
+                        lastRepair: 'Dernière réparation :', lastRestore: 'Dernière restauration :', lastScan: 'Dernière mise à jour après scan :', colon: ' : ',
+                        lastSummary: '{0} albums, {1} pistes, {2} fiches renommées, {3} créées, {4} supprimées',
+                        skipped: ', {0} ignorés',
+                        remaining: ' ; reste à changer : {0} albums, {1} pistes',
+                        snapshot: ' (instantané {0})',
+                        errors: '{0} erreur(s) : {1}',
+                        running: '{0} en cours : {1} %',
+                        lastAnalysis: 'Dernière analyse : {0}',
+                        confirmRepair: 'Réparer la médiathèque ?\n\nD\'après la dernière analyse : {0} albums et {1} pistes modifiés, {2} fiches renommées, {3} fiches parasites ou fusionnées supprimées.\n\nAvez-vous fait une sauvegarde Jellyfin ? Un instantané permet de restaurer, mais une sauvegarde reste recommandée.',
+                        confirmRepairNoReport: 'Aucune analyse affichée : la réparation va analyser puis appliquer. Continuer ?',
+                        confirmRestore: 'Restaurer la médiathèque telle qu\'elle était avant les réparations ?\n\nLes changements faits ensuite pendant les scans sont aussi défaits, et la persistance s\'arrête jusqu\'à la prochaine réparation.',
+                        overrideLabel: 'Artistes principaux imposés (séparés par « ; ») :',
+                        overridePlaceholder: 'ex. Artiste A ; Artiste B',
+                        overrideSave: 'Imposer',
+                        overrideRemove: 'Retirer le choix manuel',
+                        overrideCurrent: 'Choix manuel en place : {0}.',
+                        overrideNone: 'Choix automatique.',
+                        overrideSaved: 'Choix enregistré. Il s\'applique à la prochaine analyse et à la prochaine réparation ; une fois la médiathèque réparée, aussi au prochain scan.',
+                        overrideRemoved: 'Choix manuel retiré. Le choix automatique revient à la prochaine analyse, réparation ou scan.',
+                        overrideEmpty: 'Indiquez au moins un artiste.'
+                    },
+                    en: {
+                        intro: 'A single "Artists" tab, listing only the main artists of albums, singles and EPs.',
+                        analyzeTitle: 'Analysis',
+                        analyzeHelp: 'Works out the main artist of every album from the library\'s metadata providers, in their order (then the tags, then the folder). <b>Nothing is changed in Jellyfin.</b> The first run queries MusicBrainz at one request per second; later runs use the cache.',
+                        analyze: 'Analyze',
+                        repairTitle: 'Repair',
+                        repairHelp: 'Applies the artists proposed by the analysis (run again right before): album artists, track artists, renamed artist entries, stray entries removed. <b>Back up Jellyfin before the first repair</b> (Dashboard → Backups). A snapshot is saved before anything is written: "Restore" brings back the previous state. No audio file is changed.',
+                        repairAfter: 'Afterwards, the library stays repaired: scans and "Replace all metadata" keep the decided artists, and new albums are resolved after each scan. "Restore" undoes everything, these changes included, and stops the persistence.',
+                        repair: 'Repair',
+                        restore: 'Restore',
+                        settingsTitle: 'Settings',
+                        collabLabel: 'Collaborations "A & B"',
+                        collabBoth: 'Both are main artists: the album shows up under each of them',
+                        collabFirst: 'First credited only (the others under "Appears on")',
+                        compilationLabel: 'Compilations, soundtracks, playlists',
+                        compilationFolder: 'Folder artist, otherwise "Various Artists"',
+                        compilationVarious: 'Always "Various Artists"',
+                        compilationNone: 'No artist',
+                        displayLabel: 'Name spelling',
+                        displayMusicBrainz: 'MusicBrainz (Latin alias if needed)',
+                        displayFolder: 'Folder name',
+                        displayTag: 'Most frequent spelling in the tags',
+                        variousLabel: 'Name of compilations without an artist folder (empty: "Various Artists")',
+                        joinsLabel: 'Guest join phrases (one per line)',
+                        whitelistLabel: 'Names never to split (one per line)',
+                        persistenceLabel: 'Keep the library repaired',
+                        persistenceHelp: 'After "Repair": scans and refreshes apply these settings, without network access during the scan; new albums are resolved right after (MusicBrainz included). No effect until the library has been repaired.',
+                        rewriteLabel: 'Single tab on the server',
+                        rewriteHelp: 'Once the library is repaired, the "Artists" list is served as "Album Artists", for every client. Immediate effect.',
+                        guestsLabel: 'Guests removed from search and lists',
+                        guestsHelp: 'Once the library is repaired, artists who are not the main artist of any release no longer show up in search results nor in the artist lists of other clients. Their page stays reachable from their tracks.',
+                        tabLabel: 'Hide the "Album Artists" tab (web interface)',
+                        tabHelp: 'Once the library is repaired, it would only show the same list as "Artists". Reload the web page after a change.',
+                        save: 'Save',
+                        version: 'Version {0} ({1})',
+                        persistenceActive: 'Persistence active since {0}: {1} albums followed.',
+                        persistenceUpdated: ' Decisions updated on {0}.',
+                        persistenceOff: 'Persistence turned off in the settings: scans no longer fix anything.',
+                        persistenceInactive: 'Persistence inactive: the library has not been repaired (or has been restored).',
+                        flagCompilation: 'compilation', flagCollaboration: 'collaboration', flagNoSource: 'no source', flagLocked: 'locked', flagDisagreement: 'disagreement', flagOverride: 'manual',
+                        filterChanged: 'Changed', filterAll: 'All', filterDisagreement: 'Disagreements', filterNoSource: 'No source', filterCompilation: 'Compilations', filterCollaboration: 'Collaborations', filterLocked: 'Locked', filterOverride: 'Manual', filterLow: 'Low confidence',
+                        sourceTags: 'Tags', sourceFolder: 'Folder', sourceTrackArtists: 'Track artists', sourceOverride: 'Manual', sourceLocked: 'Locked', sourceNone: 'None', sourceProvider: 'Provider',
+                        statusCompleted: 'completed', statusFailed: 'failed', statusCancelled: 'cancelled', statusAborted: 'aborted',
+                        confHigh: 'high', confMedium: 'medium', confLow: 'low',
+                        colTrack: 'Track', colTrackArtists: 'Artists (before → after)', colCredit: 'Credit',
+                        cardArtists: '"Artists" tab', cardAlbumArtists: '"Album Artists" today', cardAlbums: 'albums changed', cardTracks: 'tracks changed', cardDisagreements: 'disagreements',
+                        fetchers: 'Providers: {0} — decision sources: {1}',
+                        proposed: 'Proposed artists ({0})',
+                        albumsCount: '{0} album(s)',
+                        leaving: 'Leaving the list: {0} guests (entry kept), {1} merged, {2} stray entries (removed by the repair)',
+                        guests: 'Guests:', merged: 'Merged (same artist, other name):', stray: 'Stray:', favorite: 'favorite', played: 'played',
+                        renamed: 'Renamed entries ({0})',
+                        colAlbum: 'Album', colCurrent: 'Current', colProposed: 'Proposed', colSource: 'Source', colNotes: 'Notes',
+                        noAlbums: 'No album for this filter.',
+                        noAnalysis: 'No analysis yet.',
+                        analysisOf: 'Analysis of {0} — MusicBrainz: {1} requests, {2} cached, {3} failed.',
+                        taskAnalyze: 'Analysis', taskRepair: 'Repair', taskRestore: 'Restore',
+                        lastRepair: 'Last repair:', lastRestore: 'Last restore:', lastScan: 'Last update after a scan:', colon: ': ',
+                        lastSummary: '{0} albums, {1} tracks, {2} entries renamed, {3} created, {4} removed',
+                        skipped: ', {0} skipped',
+                        remaining: '; left to change: {0} albums, {1} tracks',
+                        snapshot: ' (snapshot {0})',
+                        errors: '{0} error(s): {1}',
+                        running: '{0} running: {1} %',
+                        lastAnalysis: 'Last analysis: {0}',
+                        confirmRepair: 'Repair the library?\n\nAccording to the last analysis: {0} albums and {1} tracks changed, {2} entries renamed, {3} stray or merged entries removed.\n\nHave you backed up Jellyfin? A snapshot allows a restore, but a backup is still recommended.',
+                        confirmRepairNoReport: 'No analysis shown: the repair will analyze, then apply. Continue?',
+                        confirmRestore: 'Restore the library as it was before the repairs?\n\nThe changes made afterwards during scans are undone too, and the persistence stops until the next repair.',
+                        overrideLabel: 'Main artists to impose (separated by ";"):',
+                        overridePlaceholder: 'e.g. Artist A; Artist B',
+                        overrideSave: 'Impose',
+                        overrideRemove: 'Remove the manual choice',
+                        overrideCurrent: 'Manual choice in place: {0}.',
+                        overrideNone: 'Automatic choice.',
+                        overrideSaved: 'Choice saved. It applies at the next analysis and the next repair; once the library is repaired, at the next scan too.',
+                        overrideRemoved: 'Manual choice removed. The automatic choice comes back at the next analysis, repair or scan.',
+                        overrideEmpty: 'Enter at least one artist.'
+                    }
+                };
+                var LANG = /^fr/i.test(document.documentElement.lang || navigator.language || '') ? 'fr' : 'en';
 
+                function t(key) {
+                    var text = STRINGS[LANG][key];
+                    if (text === undefined) { text = STRINGS.en[key] || key; }
+                    for (var i = 1; i < arguments.length; i++) { text = text.split('{' + (i - 1) + '}').join(arguments[i]); }
+                    return text;
+                }
+
+                function translatePage() {
+                    page.querySelectorAll('[data-i18n]').forEach(function (e) { e.textContent = t(e.getAttribute('data-i18n')); });
+                    page.querySelectorAll('[data-i18n-html]').forEach(function (e) { e.innerHTML = t(e.getAttribute('data-i18n-html')); });
+                    page.querySelectorAll('[data-i18n-label]').forEach(function (e) {
+                        var text = t(e.getAttribute('data-i18n-label'));
+                        e.setAttribute('label', text);
+                        // Champs déjà construits par Jellyfin : leur étiquette est un élément voisin.
+                        var label = e.parentNode && e.parentNode.querySelector('label');
+                        if (label && label !== e) { label.textContent = text; }
+                    });
+                }
+
+                translatePage();
+
+                // ---------------------------------------------------------------- outils
                 function esc(s) {
                     return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
                         return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
@@ -177,33 +338,48 @@
 
                 function flags(value) { return String(value || '').split(',').map(function (f) { return f.trim(); }).filter(function (f) { return f && f !== 'None'; }); }
 
-                var SOURCE_LABELS = { Tags: 'Tags', Folder: 'Dossier', TrackArtists: 'Artistes des pistes', Override: 'Manuel', Locked: 'Verrouillé', None: 'Aucune' };
-                var STATUS_LABELS = { Completed: 'terminée', Failed: 'échec', Cancelled: 'annulée', Aborted: 'interrompue' };
+                function date(value) { return new Date(value).toLocaleString(LANG === 'fr' ? 'fr-FR' : undefined); }
 
-                function sourceLabel(a) {
-                    var s = a.Source === 'Provider' ? (a.SourceName || 'Fournisseur') : a.Source;
-                    return SOURCE_LABELS[s] || s;
-                }
+                var FILTERS = ['changed', 'all', 'Disagreement', 'NoSource', 'Compilation', 'Collaboration', 'Override', 'Locked', 'low'];
 
-                function confidenceLabel(c) { return { High: 'haute', Medium: 'moyenne', Low: 'basse' }[c] || c; }
+                function filterLabel(f) { return t('filter' + f.charAt(0).toUpperCase() + f.slice(1)); }
+
+                function sourceLabel(a) { return a.Source === 'Provider' ? (a.SourceName || t('sourceProvider')) : t('source' + a.Source); }
 
                 function matches(a) {
                     if (filter === 'all') { return true; }
-                    if (filter === 'changed') { return a.Changed || a.Tracks.some(function (t) { return t.Changed; }); }
+                    if (filter === 'changed') { return a.Changed || a.Tracks.some(function (x) { return x.Changed; }); }
                     if (filter === 'low') { return a.Confidence === 'Low'; }
                     return flags(a.Flags).indexOf(filter) >= 0;
                 }
 
+                // ---------------------------------------------------------------- rapport
+                function renderOverride(a) {
+                    var current = overrides[a.Id];
+                    return '<div class="tml-override" data-album="' + esc(a.Id) + '">'
+                        + '<span>' + esc(t('overrideLabel')) + '</span>'
+                        + '<input type="text" value="' + esc(current ? current.MainArtists.join(' ; ') : '') + '" placeholder="' + esc(t('overridePlaceholder')) + '" />'
+                        + '<button is="emby-button" type="button" class="raised emby-button" data-override="save">' + esc(t('overrideSave')) + '</button>'
+                        + (current ? '<button is="emby-button" type="button" class="emby-button" data-override="remove">' + esc(t('overrideRemove')) + '</button>' : '')
+                        + '<small class="fieldDescription" data-override-status>' + esc(current ? t('overrideCurrent', current.MainArtists.join(', ')) : t('overrideNone')) + '</small>'
+                        + '</div>';
+                }
+
                 function renderTracks(a) {
-                    var rows = a.Tracks.map(function (t) {
-                        var cur = (t.CurrentArtists || []).join(' ; ');
-                        var next = (t.Artists || []).join(', ');
-                        var same = !t.Changed;
-                        return '<tr><td>' + esc((t.Disc ? t.Disc + '.' : '') + (t.Number || '')) + '</td><td>' + esc(t.Name) + '</td>'
-                            + '<td>' + (same ? '<span class="tml-same">' + esc(next) + '</span>' : '<span class="tml-old">' + esc(cur) + '</span><br><span class="tml-new">' + esc(next) + '</span>') + '</td>'
-                            + '<td>' + esc(t.CreditSource) + '</td></tr>';
+                    var rows = a.Tracks.map(function (x) {
+                        var cur = (x.CurrentArtists || []).join(' ; ');
+                        var next = (x.Artists || []).join(', ');
+                        return '<tr><td>' + esc((x.Disc ? x.Disc + '.' : '') + (x.Number || '')) + '</td><td>' + esc(x.Name) + '</td>'
+                            + '<td>' + (!x.Changed ? '<span class="tml-same">' + esc(next) + '</span>' : '<span class="tml-old">' + esc(cur) + '</span><br><span class="tml-new">' + esc(next) + '</span>') + '</td>'
+                            + '<td>' + esc(x.CreditSource) + '</td></tr>';
                     }).join('');
-                    return '<table class="tml-table"><thead><tr><th>#</th><th>Piste</th><th>Artistes (avant → après)</th><th>Crédit</th></tr></thead><tbody>' + rows + '</tbody></table>';
+                    return renderOverride(a)
+                        + '<table class="tml-table"><thead><tr><th>#</th><th>' + esc(t('colTrack')) + '</th><th>' + esc(t('colTrackArtists')) + '</th><th>' + esc(t('colCredit')) + '</th></tr></thead><tbody>' + rows + '</tbody></table>';
+                }
+
+                function chip(r, text) {
+                    var title = (r.Favorites ? t('favorite') + ' ' : '') + (r.Played ? t('played') : '');
+                    return '<span class="' + (r.Favorites || r.Played ? 'tml-warn' : '') + '" title="' + esc(title) + '">' + esc(text) + '</span>';
                 }
 
                 function renderLibrary(lib, index) {
@@ -213,72 +389,93 @@
                     var deleted = s.Removed.filter(function (r) { return r.Fate === 'Deleted'; });
                     var html = '<h3>' + esc(lib.Name) + '</h3>'
                         + '<div class="tml-cards">'
-                        + '<div class="tml-card"><b>' + s.CurrentArtistsTab + ' → ' + s.ProposedArtists.length + '</b>onglet « Artistes »</div>'
-                        + '<div class="tml-card"><b>' + s.CurrentAlbumArtistsTab + '</b>« Artistes de l\'album » aujourd\'hui</div>'
-                        + '<div class="tml-card"><b>' + s.ChangedAlbums + ' / ' + s.Albums + '</b>albums modifiés</div>'
-                        + '<div class="tml-card"><b>' + s.ChangedTracks + ' / ' + s.Tracks + '</b>pistes modifiées</div>'
-                        + '<div class="tml-card"><b>' + (s.ByFlag.Disagreement || 0) + '</b>désaccords</div>'
+                        + '<div class="tml-card"><b>' + s.CurrentArtistsTab + ' → ' + s.ProposedArtists.length + '</b>' + esc(t('cardArtists')) + '</div>'
+                        + '<div class="tml-card"><b>' + s.CurrentAlbumArtistsTab + '</b>' + esc(t('cardAlbumArtists')) + '</div>'
+                        + '<div class="tml-card"><b>' + s.ChangedAlbums + ' / ' + s.Albums + '</b>' + esc(t('cardAlbums')) + '</div>'
+                        + '<div class="tml-card"><b>' + s.ChangedTracks + ' / ' + s.Tracks + '</b>' + esc(t('cardTracks')) + '</div>'
+                        + '<div class="tml-card"><b>' + (s.ByFlag.Disagreement || 0) + '</b>' + esc(t('cardDisagreements')) + '</div>'
                         + '</div>'
-                        + '<p class="fieldDescription">Fournisseurs : ' + esc(s.Fetchers.join(' → ')) + ' — sources des décisions : '
-                        + esc(Object.keys(s.BySource).map(function (k) { return (SOURCE_LABELS[k] || k) + ' ' + s.BySource[k]; }).join(', ')) + '</p>'
+                        + '<p class="fieldDescription">' + esc(t('fetchers', s.Fetchers.join(' → '),
+                            Object.keys(s.BySource).map(function (k) { return (STRINGS[LANG]['source' + k] ? t('source' + k) : k) + ' ' + s.BySource[k]; }).join(', '))) + '</p>'
                         + s.Notes.map(function (n) { return '<p class="fieldDescription">⚠ ' + esc(n) + '</p>'; }).join('')
-                        + '<details open><summary>Artistes proposés (' + s.ProposedArtists.length + ')</summary><div class="tml-chips">'
-                        + s.ProposedArtists.map(function (a) { return '<span title="' + a.Albums + ' album(s)">' + esc(a.Name) + '</span>'; }).join('') + '</div></details>'
-                        + '<details><summary>Quittent la liste : ' + hidden.length + ' invités (fiche gardée), ' + merged.length + ' fusionnées, ' + deleted.length + ' fiches parasites (supprimées par la réparation)</summary>'
-                        + '<p>Invités :</p><div class="tml-chips">' + hidden.map(function (r) { return '<span class="' + (r.Favorites || r.Played ? 'tml-warn' : '') + '">' + esc(r.Name) + '</span>'; }).join('') + '</div>'
-                        + '<p>Fusionnées (même artiste, autre nom) :</p><div class="tml-chips">' + merged.map(function (r) { return '<span class="' + (r.Favorites || r.Played ? 'tml-warn' : '') + '">' + esc(r.Name) + ' → ' + esc(r.Into) + '</span>'; }).join('') + '</div>'
-                        + '<p>Parasites :</p><div class="tml-chips">' + deleted.map(function (r) { return '<span class="' + (r.Favorites || r.Played ? 'tml-warn' : '') + '" title="' + (r.Favorites ? 'favori ' : '') + (r.Played ? 'écouté' : '') + '">' + esc(r.Name) + '</span>'; }).join('') + '</div></details>'
-                        + '<details><summary>Fiches renommées (' + s.Renames.length + ')</summary><div class="tml-chips">'
+                        + '<details open><summary>' + esc(t('proposed', s.ProposedArtists.length)) + '</summary><div class="tml-chips">'
+                        + s.ProposedArtists.map(function (a) { return '<span title="' + esc(t('albumsCount', a.Albums)) + '">' + esc(a.Name) + '</span>'; }).join('') + '</div></details>'
+                        + '<details><summary>' + esc(t('leaving', hidden.length, merged.length, deleted.length)) + '</summary>'
+                        + '<p>' + esc(t('guests')) + '</p><div class="tml-chips">' + hidden.map(function (r) { return chip(r, r.Name); }).join('') + '</div>'
+                        + '<p>' + esc(t('merged')) + '</p><div class="tml-chips">' + merged.map(function (r) { return chip(r, r.Name + ' → ' + r.Into); }).join('') + '</div>'
+                        + '<p>' + esc(t('stray')) + '</p><div class="tml-chips">' + deleted.map(function (r) { return chip(r, r.Name); }).join('') + '</div></details>'
+                        + '<details><summary>' + esc(t('renamed', s.Renames.length)) + '</summary><div class="tml-chips">'
                         + s.Renames.map(function (r) { return '<span>' + esc(r.From) + ' → ' + esc(r.To) + '</span>'; }).join('') + '</div></details>'
                         + '<div class="tml-filters">' + FILTERS.map(function (f) {
-                            return '<button is="emby-button" type="button" class="emby-button ' + (filter === f[0] ? 'tml-on' : '') + '" data-filter="' + f[0] + '">' + f[1] + '</button>';
+                            return '<button is="emby-button" type="button" class="emby-button ' + (filter === f ? 'tml-on' : '') + '" data-filter="' + f + '">' + esc(filterLabel(f)) + '</button>';
                         }).join('') + '</div>';
 
                     var rows = lib.Albums.filter(matches).map(function (a, i) {
                         var id = 'tml-' + index + '-' + i;
-                        var badges = flags(a.Flags).map(function (f) { return '<span class="tml-flag tml-flag-' + f + '">' + esc(FLAG_LABELS[f] || f) + '</span>'; }).join('');
+                        var badges = flags(a.Flags).map(function (f) { return '<span class="tml-flag tml-flag-' + f + '">' + esc(t('flag' + f)) + '</span>'; }).join('');
+                        var current = (a.CurrentAlbumArtists || []).join(', ');
                         return '<tr class="tml-album" data-target="' + id + '"><td>' + esc(a.Path) + '<br><small>' + esc(a.ReleaseType || '') + '</small></td>'
-                            + '<td>' + (a.Changed ? '<span class="tml-old">' + esc((a.CurrentAlbumArtists || []).join(', ')) + '</span>' : '<span class="tml-same">' + esc((a.CurrentAlbumArtists || []).join(', ')) + '</span>') + '</td>'
+                            + '<td>' + (a.Changed ? '<span class="tml-old">' + esc(current) + '</span>' : '<span class="tml-same">' + esc(current) + '</span>') + '</td>'
                             + '<td><b>' + esc(names(a.MainArtists)) + '</b></td>'
-                            + '<td>' + esc(sourceLabel(a)) + '<br><small>' + esc(confidenceLabel(a.Confidence)) + '</small></td>'
+                            + '<td>' + esc(sourceLabel(a)) + '<br><small>' + esc(t('conf' + a.Confidence)) + '</small></td>'
                             + '<td>' + badges + '<br><small>' + esc((a.Notes || []).join(' · ')) + '</small></td></tr>'
                             + '<tr class="tml-tracks" id="' + id + '" style="display:none"><td colspan="5">' + renderTracks(a) + '</td></tr>';
                     }).join('');
-                    html += '<table class="tml-table"><thead><tr><th>Album</th><th>Actuel</th><th>Proposé</th><th>Source</th><th>Remarques</th></tr></thead><tbody>'
-                        + (rows || '<tr><td colspan="5">Aucun album pour ce filtre.</td></tr>') + '</tbody></table>';
+                    html += '<table class="tml-table"><thead><tr><th>' + esc(t('colAlbum')) + '</th><th>' + esc(t('colCurrent')) + '</th><th>' + esc(t('colProposed')) + '</th><th>' + esc(t('colSource')) + '</th><th>' + esc(t('colNotes')) + '</th></tr></thead><tbody>'
+                        + (rows || '<tr><td colspan="5">' + esc(t('noAlbums')) + '</td></tr>') + '</tbody></table>';
                     return html;
                 }
 
                 function renderReport() {
                     var el = page.querySelector('#tmlReport');
-                    if (!report) { el.innerHTML = '<p class="fieldDescription">Pas encore d\'analyse.</p>'; return; }
+                    if (!report) { el.innerHTML = '<p class="fieldDescription">' + esc(t('noAnalysis')) + '</p>'; return; }
                     var mb = report.MusicBrainz || {};
-                    el.innerHTML = '<p class="fieldDescription">Analyse du ' + esc(new Date(report.GeneratedAt).toLocaleString())
-                        + ' — MusicBrainz : ' + (mb.Requests || 0) + ' requêtes, ' + (mb.CacheHits || 0) + ' en cache, ' + (mb.Failures || 0) + ' échecs.</p>'
+                    el.innerHTML = '<p class="fieldDescription">' + esc(t('analysisOf', date(report.GeneratedAt), mb.Requests || 0, mb.CacheHits || 0, mb.Failures || 0)) + '</p>'
                         + report.Libraries.map(renderLibrary).join('');
                 }
 
                 function loadReport() {
-                    return ApiClient.fetch({ url: ApiClient.getUrl('TrueMusicLibrary/Analysis'), type: 'GET', dataType: 'json' })
-                        .then(function (r) { report = r; renderReport(); })
-                        .catch(function () { report = null; renderReport(); });
+                    var getOverrides = ApiClient.fetch({ url: ApiClient.getUrl('TrueMusicLibrary/Overrides'), type: 'GET', dataType: 'json' })
+                        .then(function (o) { overrides = o || {}; }, function () { overrides = {}; });
+                    var getReport = ApiClient.fetch({ url: ApiClient.getUrl('TrueMusicLibrary/Analysis'), type: 'GET', dataType: 'json' })
+                        .then(function (r) { report = r; }, function () { report = null; });
+                    return Promise.all([getOverrides, getReport]).then(renderReport);
                 }
 
-                var TASK_LABELS = { analyze: 'Analyse', repair: 'Réparation', restore: 'Restauration' };
+                // ---------------------------------------------------------------- choix manuels
+                function saveOverride(box, remove) {
+                    var albumId = box.getAttribute('data-album');
+                    var status = box.querySelector('[data-override-status]');
+                    var artists = box.querySelector('input').value.split(';').map(function (n) { return n.trim(); }).filter(function (n) { return n; });
+                    if (!remove && artists.length === 0) { status.textContent = t('overrideEmpty'); return; }
+                    var request = remove
+                        ? ApiClient.fetch({ url: ApiClient.getUrl('TrueMusicLibrary/Overrides/' + albumId), type: 'DELETE' })
+                        : ApiClient.fetch({ url: ApiClient.getUrl('TrueMusicLibrary/Overrides/' + albumId), type: 'PUT', data: JSON.stringify({ MainArtists: artists }), contentType: 'application/json' });
+                    request.then(function () {
+                        if (remove) { delete overrides[albumId]; } else { overrides[albumId] = { MainArtists: artists }; }
+                        var detail = box.parentNode;
+                        var a = null;
+                        (report ? report.Libraries : []).forEach(function (l) { l.Albums.forEach(function (x) { if (x.Id === albumId) { a = x; } }); });
+                        if (a) { detail.querySelector('.tml-override').outerHTML = renderOverride(a); }
+                        detail.querySelector('[data-override-status]').textContent = t(remove ? 'overrideRemoved' : 'overrideSaved');
+                    });
+                }
 
-                function isRunning(t) { return t && (t.state === 'Running' || t.state === 'Cancelling'); }
+                // ---------------------------------------------------------------- tâches
+                function isRunning(x) { return x && (x.state === 'Running' || x.state === 'Cancelling'); }
+
+                function taskLabel(k) { return t('task' + k.charAt(0).toUpperCase() + k.slice(1)); }
 
                 function loadLastOperation() {
                     var el = page.querySelector('#tmlLastOperation');
                     ApiClient.fetch({ url: ApiClient.getUrl('TrueMusicLibrary/Operation/Last'), type: 'GET', dataType: 'json' }).then(function (r) {
-                        var label = { Restore: 'Dernière restauration', Scan: 'Dernière mise à jour après scan' }[r.Operation] || 'Dernière réparation';
-                        el.innerHTML = '<p class="fieldDescription">' + label + ' : ' + esc(new Date(r.FinishedAt || r.StartedAt).toLocaleString()) + ' — '
-                            + r.AlbumsUpdated + ' albums, ' + r.TracksUpdated + ' pistes, ' + r.ArtistsRenamed + ' fiches renommées, '
-                            + r.ArtistsCreated + ' créées, ' + r.ArtistsDeleted + ' supprimées'
-                            + (r.Skipped ? ', ' + r.Skipped + ' ignorés' : '')
-                            + (r.RemainingAlbumChanges != null ? ' ; reste à changer : ' + r.RemainingAlbumChanges + ' albums, ' + r.RemainingTrackChanges + ' pistes' : '')
-                            + (r.SnapshotId ? ' (instantané ' + esc(r.SnapshotId) + ')' : '') + '</p>'
-                            + (r.Errors && r.Errors.length ? '<p class="fieldDescription">⚠ ' + r.Errors.length + ' erreur(s) : ' + esc(r.Errors.slice(0, 5).join(' ; ')) + '</p>' : '');
+                        var label = t({ Restore: 'lastRestore', Scan: 'lastScan' }[r.Operation] || 'lastRepair');
+                        el.innerHTML = '<p class="fieldDescription">' + esc(label + ' ' + date(r.FinishedAt || r.StartedAt) + ' — '
+                            + t('lastSummary', r.AlbumsUpdated, r.TracksUpdated, r.ArtistsRenamed, r.ArtistsCreated, r.ArtistsDeleted)
+                            + (r.Skipped ? t('skipped', r.Skipped) : '')
+                            + (r.RemainingAlbumChanges != null ? t('remaining', r.RemainingAlbumChanges, r.RemainingTrackChanges) : '')
+                            + (r.SnapshotId ? t('snapshot', r.SnapshotId) : '')) + '</p>'
+                            + (r.Errors && r.Errors.length ? '<p class="fieldDescription">⚠ ' + esc(t('errors', r.Errors.length, r.Errors.slice(0, 5).join(' ; '))) + '</p>' : '');
                     }).catch(function () { el.innerHTML = ''; });
                 }
 
@@ -290,16 +487,16 @@
                         page.querySelector('#btnRepair').disabled = !!running;
                         page.querySelector('#btnRestore').disabled = !!running || !s.canRestore;
                         if (running) {
-                            el.textContent = TASK_LABELS[running] + ' en cours : ' + Math.round(s[running].progress || 0) + ' %';
+                            el.textContent = t('running', taskLabel(running), Math.round(s[running].progress || 0));
                             pollTimer = setTimeout(pollStatus, 2000);
                             return;
                         }
 
                         var a = s.analyze || {};
-                        el.textContent = a.lastStatus ? 'Dernière analyse : ' + (STATUS_LABELS[a.lastStatus] || a.lastStatus) + (a.lastError ? ' — ' + a.lastError : '') : '';
+                        el.textContent = a.lastStatus ? t('lastAnalysis', t('status' + a.lastStatus)) + (a.lastError ? ' — ' + a.lastError : '') : '';
                         ['repair', 'restore'].forEach(function (k) {
                             if (s[k] && s[k].lastStatus && s[k].lastStatus !== 'Completed' && s[k].lastError) {
-                                el.textContent += ' — ' + TASK_LABELS[k] + ' : ' + s[k].lastError;
+                                el.textContent += ' — ' + taskLabel(k) + t('colon') + s[k].lastError;
                             }
                         });
                         if (pollTimer) { pollTimer = null; loadReport(); loadLastOperation(); loadStatus(); }
@@ -320,21 +517,19 @@
                         albums += l.Summary.ChangedAlbums; tracks += l.Summary.ChangedTracks; renames += l.Summary.Renames.length;
                         deleted += l.Summary.Removed.filter(function (r) { return r.Fate !== 'Hidden'; }).length;
                     });
-                    var message = report
-                        ? 'Réparer la médiathèque ?\n\nD\'après la dernière analyse : ' + albums + ' albums et ' + tracks + ' pistes modifiés, '
-                          + renames + ' fiches renommées, ' + deleted + ' fiches parasites ou fusionnées supprimées.\n\n'
-                          + 'Avez-vous fait une sauvegarde Jellyfin ? Un instantané permet de restaurer, mais une sauvegarde reste recommandée.'
-                        : 'Aucune analyse affichée : la réparation va analyser puis appliquer. Continuer ?';
+                    var message = report ? t('confirmRepair', albums, tracks, renames, deleted) : t('confirmRepairNoReport');
                     if (window.confirm(message)) { runTask('TrueMusicLibrary/Repair/Run'); }
                 });
 
                 page.querySelector('#btnRestore').addEventListener('click', function () {
-                    if (window.confirm('Restaurer la médiathèque telle qu\'elle était avant les réparations ?\n\nLes changements faits ensuite pendant les scans sont aussi défaits, et la persistance s\'arrête jusqu\'à la prochaine réparation.')) { runTask('TrueMusicLibrary/Restore/Run'); }
+                    if (window.confirm(t('confirmRestore'))) { runTask('TrueMusicLibrary/Restore/Run'); }
                 });
 
                 page.querySelector('#tmlReport').addEventListener('click', function (e) {
                     var button = e.target.closest('[data-filter]');
                     if (button) { filter = button.getAttribute('data-filter'); renderReport(); return; }
+                    var overrideButton = e.target.closest('[data-override]');
+                    if (overrideButton) { saveOverride(overrideButton.closest('.tml-override'), overrideButton.getAttribute('data-override') === 'remove'); return; }
                     var row = e.target.closest('tr.tml-album');
                     if (row) {
                         var detail = page.querySelector('#' + row.getAttribute('data-target'));
@@ -342,21 +537,25 @@
                     }
                 });
 
+                page.querySelector('#tmlReport').addEventListener('keydown', function (e) {
+                    if (e.key === 'Enter' && e.target.matches('.tml-override input')) { e.preventDefault(); saveOverride(e.target.closest('.tml-override'), false); }
+                });
+
                 function loadStatus() {
                     var el = page.querySelector('#TrueMusicLibraryStatus');
                     ApiClient.fetch({ url: ApiClient.getUrl('TrueMusicLibrary/Status'), type: 'GET', dataType: 'json' })
                         .then(function (s) {
-                            el.textContent = 'Version ' + s.version + ' (' + s.target + ')';
+                            el.textContent = t('version', s.version, s.target);
                             var p = s.persistence || {};
                             page.querySelector('#tmlPersistence').textContent = p.active
-                                ? 'Persistance active depuis le ' + new Date(p.since).toLocaleString() + ' : ' + p.albums + ' albums suivis'
-                                    + (p.updatedAt ? ', décisions mises à jour le ' + new Date(p.updatedAt).toLocaleString() : '') + '.'
-                                : (p.since ? 'Persistance coupée dans les réglages : les scans ne corrigent plus rien.' : 'Persistance inactive : la médiathèque n\'a pas été réparée (ou a été restaurée).');
+                                ? t('persistenceActive', date(p.since), p.albums) + (p.updatedAt ? t('persistenceUpdated', date(p.updatedAt)) : '')
+                                : (p.since ? t('persistenceOff') : t('persistenceInactive'));
                         })
                         .catch(function () { el.textContent = ''; });
                 }
 
                 page.addEventListener('pageshow', function () {
+                    translatePage();
                     Dashboard.showLoadingMsg();
                     ApiClient.getPluginConfiguration(pluginId).then(function (config) {
                         page.querySelector('#selCollaboration').value = config.Collaboration || 'Both';

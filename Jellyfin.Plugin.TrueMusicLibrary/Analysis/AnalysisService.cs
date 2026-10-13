@@ -150,7 +150,7 @@ public static class TaskGate
     {
         if (!await _gate.WaitAsync(TimeSpan.Zero, cancellationToken).ConfigureAwait(false))
         {
-            throw new InvalidOperationException("Une autre opération True Music Library est déjà en cours.");
+            throw new InvalidOperationException(Messages.OtherOperationRunning);
         }
 
         return new Releaser();

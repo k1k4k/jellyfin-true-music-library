@@ -42,8 +42,8 @@ public class PluginConfiguration : BasePluginConfiguration
     /// <summary>Noms à ne jamais couper, un par ligne.</summary>
     public string NameWhitelist { get; set; } = string.Join("\n", ResolverSettings.DefaultNameWhitelist);
 
-    /// <summary>Nom affiché des compilations sans dossier artiste.</summary>
-    public string VariousArtistsName { get; set; } = "Artistes variés";
+    /// <summary>Nom affiché des compilations sans dossier artiste. Vide : « Artistes variés » ou « Various Artists » selon la langue du serveur.</summary>
+    public string VariousArtistsName { get; set; } = string.Empty;
 
     /// <summary>Réglages du résolveur.</summary>
     public ResolverSettings ToResolverSettings() => new()
@@ -53,7 +53,7 @@ public class PluginConfiguration : BasePluginConfiguration
         DisplayName = DisplayName,
         GuestJoinPhrases = Lines(GuestJoinPhrases, ResolverSettings.DefaultGuestJoinPhrases),
         NameWhitelist = Lines(NameWhitelist, []),
-        VariousArtistsName = string.IsNullOrWhiteSpace(VariousArtistsName) ? "Artistes variés" : VariousArtistsName.Trim()
+        VariousArtistsName = string.IsNullOrWhiteSpace(VariousArtistsName) ? Messages.VariousArtists : VariousArtistsName.Trim()
     };
 
     private static IReadOnlyList<string> Lines(string? text, IReadOnlyList<string> fallback)

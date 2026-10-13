@@ -1,7 +1,9 @@
 using System.Globalization;
 using Jellyfin.Plugin.TrueMusicLibrary.Configuration;
+using Jellyfin.Plugin.TrueMusicLibrary.Resolution;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Plugins;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Serialization;
 
@@ -16,10 +18,13 @@ public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
     /// <summary>Segment de route de l'API du plugin.</summary>
     public const string RoutePrefix = "TrueMusicLibrary";
 
-    public Plugin(IApplicationPaths applicationPaths, IXmlSerializer xmlSerializer)
+    public Plugin(IApplicationPaths applicationPaths, IXmlSerializer xmlSerializer, IServerConfigurationManager serverConfiguration)
         : base(applicationPaths, xmlSerializer)
     {
         Instance = this;
+
+        // Rapport, tâches et erreurs dans la langue de l'interface du serveur (français ou anglais).
+        Messages.IsFrench = () => serverConfiguration.Configuration.UICulture?.StartsWith("fr", StringComparison.OrdinalIgnoreCase) == true;
     }
 
     public static Plugin? Instance { get; private set; }
