@@ -1,0 +1,27 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+    paths-ignore: ["*.md", "manifest*.json", "docs/**"]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - target: jf12
+            dotnet: 10.0.x
+          - target: jf10
+            dotnet: 9.0.x
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: ${{ matrix.dotnet }}
+      - name: Build (${{ matrix.target }})
+        run: dotnet build Jellyfin.Plugin.TrueMusicLibrary/Jellyfin.Plugin.TrueMusicLibrary.csproj -c Release -p:JellyfinTarget=${{ matrix.target }}
+      - name: Syntax check scripts
+        run: python3 -m py_compile scripts/*.py

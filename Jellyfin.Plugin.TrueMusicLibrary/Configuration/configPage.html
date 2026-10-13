@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>True Music Library</title>
+</head>
+<body>
+    <div id="TrueMusicLibraryConfigPage" data-role="page" class="page type-interior pluginConfigurationPage" data-require="emby-input,emby-button,emby-checkbox,emby-textarea,emby-select">
+        <style>
+            #TrueMusicLibraryConfigPage .tml-cards { display: flex; flex-wrap: wrap; gap: .8em; margin: 1em 0; }
+            #TrueMusicLibraryConfigPage .tml-card { background: rgba(127,127,127,.12); border-radius: .4em; padding: .7em 1em; min-width: 9em; }
+            #TrueMusicLibraryConfigPage .tml-card b { display: block; font-size: 1.6em; }
+            #TrueMusicLibraryConfigPage .tml-chips span { display: inline-block; background: rgba(127,127,127,.18); border-radius: 1em; padding: .1em .7em; margin: .15em; font-size: .9em; }
+            #TrueMusicLibraryConfigPage .tml-chips span.tml-warn { background: rgba(255,170,0,.35); }
+            #TrueMusicLibraryConfigPage .tml-filters button { margin: .2em .3em .2em 0; }
+            #TrueMusicLibraryConfigPage .tml-filters button.tml-on { background: #00a4dc; color: #fff; }
+            #TrueMusicLibraryConfigPage table.tml-table { width: 100%; border-collapse: collapse; font-size: .92em; }
+            #TrueMusicLibraryConfigPage table.tml-table th, #TrueMusicLibraryConfigPage table.tml-table td { text-align: left; padding: .35em .5em; border-bottom: 1px solid rgba(127,127,127,.2); vertical-align: top; }
+            #TrueMusicLibraryConfigPage tr.tml-album { cursor: pointer; }
+            #TrueMusicLibraryConfigPage tr.tml-album:hover { background: rgba(127,127,127,.1); }
+            #TrueMusicLibraryConfigPage tr.tml-tracks td { background: rgba(127,127,127,.06); }
+            #TrueMusicLibraryConfigPage .tml-flag { display: inline-block; font-size: .8em; border-radius: .3em; padding: 0 .4em; margin: 0 .2em .2em 0; background: rgba(127,127,127,.25); }
+            #TrueMusicLibraryConfigPage .tml-flag-Disagreement, #TrueMusicLibraryConfigPage .tml-flag-NoSource { background: rgba(255,170,0,.45); }
+            #TrueMusicLibraryConfigPage .tml-same { opacity: .55; }
+            #TrueMusicLibraryConfigPage .tml-new { color: #52b54b; }
+            #TrueMusicLibraryConfigPage .tml-old { text-decoration: line-through; opacity: .6; }
+        </style>
+        <div data-role="content">
+            <div class="content-primary">
+                <div class="verticalSection">
+                    <h2 class="sectionTitle">True Music Library</h2>
+                    <p>
+                        Un seul onglet « Artistes », avec seulement les artistes principaux des albums, singles et EP.
+                        Version de développement : analyse, réparation, restauration et persistance aux scans.
+                    </p>
+                    <p id="TrueMusicLibraryStatus" class="fieldDescription"></p>
+                    <p id="tmlPersistence" class="fieldDescription"></p>
+                </div>
+
+                <!-- ============ Analyse ============ -->
+                <div class="verticalSection">
+                    <h2 class="sectionTitle">Analyse</h2>
+                    <p class="fieldDescription">
+                        Calcule l'artiste principal de chaque album avec les fournisseurs de métadonnées de la bibliothèque, dans leur ordre
+                        (puis les tags, puis le dossier). <b>Rien n'est modifié dans Jellyfin.</b> Le premier passage interroge MusicBrainz
+                        à une requête par seconde ; les suivants utilisent le cache.
+                    </p>
+                    <button is="emby-button" type="button" id="btnAnalyze" class="raised button-submit emby-button"><span>Analyser</span></button>
+                    <p id="tmlAnalysisState" class="fieldDescription"></p>
+                </div>
+
+                <!-- ============ Réparer / Restaurer ============ -->
+                <div class="verticalSection">
+                    <h2 class="sectionTitle">Réparer</h2>
+                    <p class="fieldDescription">
+                        Applique les artistes proposés par l'analyse (refaite juste avant) : artistes d'album, artistes des pistes, fiches renommées,
+                        fiches parasites supprimées. <b>Avant la première réparation, faites une sauvegarde Jellyfin</b> (Tableau de bord → Sauvegardes).
+                        Un instantané est enregistré avant toute écriture : « Restaurer » remet l'état d'avant. Aucun fichier audio n'est modifié.
+                    </p>
+                    <p class="fieldDescription">
+                        Ensuite, la médiathèque reste réparée : les scans et « Remplacer toutes les métadonnées » gardent les artistes décidés,
+                        et les nouveaux albums sont résolus après chaque scan. « Restaurer » revient sur tout, y compris sur ces changements,
+                        et arrête la persistance.
+                    </p>
+                    <button is="emby-button" type="button" id="btnRepair" class="raised button-submit emby-button"><span>Réparer</span></button>
+                    <button is="emby-button" type="button" id="btnRestore" class="raised emby-button"><span>Restaurer</span></button>
+                    <div id="tmlLastOperation"></div>
+                </div>
+
+                <div class="verticalSection">
+                    <div id="tmlReport"></div>
+                </div>
+
+                <!-- ============ Réglages ============ -->
+                <form id="TrueMusicLibraryConfigForm" class="verticalSection">
+                    <h2 class="sectionTitle">Réglages</h2>
+
+                    <div class="selectContainer">
+                        <select is="emby-select" id="selCollaboration" label="Collaborations « A & B »">
+                            <option value="Both">Les deux sont principaux : l'album apparaît chez chacun</option>
+                            <option value="FirstOnly">Premier crédité seulement (les autres dans « Apparaît sur »)</option>
+                        </select>
+                    </div>
+                    <div class="selectContainer">
+                        <select is="emby-select" id="selCompilation" label="Compilations, BO, playlists">
+                            <option value="FolderArtist">Artiste du dossier, sinon « Artistes variés »</option>
+                            <option value="VariousArtists">Toujours « Artistes variés »</option>
+                            <option value="None">Aucun artiste</option>
+                        </select>
+                    </div>
+                    <div class="selectContainer">
+                        <select is="emby-select" id="selDisplayName" label="Écriture des noms">
+                            <option value="MusicBrainz">MusicBrainz (alias latin si besoin)</option>
+                            <option value="Folder">Nom du dossier</option>
+                            <option value="Tag">Écriture la plus fréquente dans les tags</option>
+                        </select>
+                    </div>
+                    <div class="inputContainer">
+                        <input is="emby-input" id="txtVariousArtists" type="text" label="Nom des compilations sans dossier artiste" />
+                    </div>
+                    <div class="inputContainer">
+                        <textarea is="emby-textarea" id="txtGuestJoins" label="Jointures d'invité (une par ligne)" rows="4"></textarea>
+                    </div>
+                    <div class="inputContainer">
+                        <textarea is="emby-textarea" id="txtWhitelist" label="Noms à ne jamais couper (un par ligne)" rows="6"></textarea>
+                    </div>
+
+                    <div class="checkboxContainer checkboxContainer-withDescription">
+                        <label class="emby-checkbox-label">
+                            <input id="chkPersistence" type="checkbox" is="emby-checkbox" />
+                            <span>Garder la médiathèque réparée</span>
+                        </label>
+                        <div class="fieldDescription checkboxFieldDescription">
+                            Après « Réparer » : les scans et les actualisations appliquent ces réglages, sans réseau pendant le scan ;
+                            les nouveaux albums sont résolus juste après (MusicBrainz compris). Sans effet tant que la médiathèque n'a pas été réparée.
+                        </div>
+                    </div>
+
+                    <div class="checkboxContainer checkboxContainer-withDescription">
+                        <label class="emby-checkbox-label">
+                            <input id="chkRewrite" type="checkbox" is="emby-checkbox" />
+                            <span>Onglet unique côté serveur</span>
+                        </label>
+                        <div class="fieldDescription checkboxFieldDescription">
+                            La liste « Artistes » est servie comme « Artistes de l'album », pour tous les clients. Effet immédiat.
+                        </div>
+                    </div>
+
+                    <div>
+                        <button is="emby-button" type="submit" class="raised button-submit block emby-button"><span>Enregistrer</span></button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <script type="text/javascript">
+            (function () {
+                var pluginId = '541fb644-193a-4692-b8a4-2593356153a7';
+                var page = document.querySelector('#TrueMusicLibraryConfigPage');
+                var pollTimer = null;
+                var report = null;
+                var filter = 'changed';
+
+                var FLAG_LABELS = { Compilation: 'compilation', Collaboration: 'collaboration', NoSource: 'sans source', Locked: 'verrouillé', Disagreement: 'désaccord', Override: 'manuel' };
+                var FILTERS = [
+                    ['changed', 'Modifiés'], ['all', 'Tous'], ['Disagreement', 'Désaccords'], ['NoSource', 'Sans source'],
+                    ['Compilation', 'Compilations'], ['Collaboration', 'Collaborations'], ['Locked', 'Verrouillés'], ['low', 'Confiance basse']
+                ];
+
+                function esc(s) {
+                    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+                        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+                    });
+                }
+
+                function names(list) { return (list || []).map(function (a) { return a.Name || a; }).join(', '); }
+
+                function flags(value) { return String(value || '').split(',').map(function (f) { return f.trim(); }).filter(function (f) { return f && f !== 'None'; }); }
+
+                var SOURCE_LABELS = { Tags: 'Tags', Folder: 'Dossier', TrackArtists: 'Artistes des pistes', Override: 'Manuel', Locked: 'Verrouillé', None: 'Aucune' };
+                var STATUS_LABELS = { Completed: 'terminée', Failed: 'échec', Cancelled: 'annulée', Aborted: 'interrompue' };
+
+                function sourceLabel(a) {
+                    var s = a.Source === 'Provider' ? (a.SourceName || 'Fournisseur') : a.Source;
+                    return SOURCE_LABELS[s] || s;
+                }
+
+                function confidenceLabel(c) { return { High: 'haute', Medium: 'moyenne', Low: 'basse' }[c] || c; }
+
+                function matches(a) {
+                    if (filter === 'all') { return true; }
+                    if (filter === 'changed') { return a.Changed || a.Tracks.some(function (t) { return t.Changed; }); }
+                    if (filter === 'low') { return a.Confidence === 'Low'; }
+                    return flags(a.Flags).indexOf(filter) >= 0;
+                }
+
+                function renderTracks(a) {
+                    var rows = a.Tracks.map(function (t) {
+                        var cur = (t.CurrentArtists || []).join(' ; ');
+                        var next = (t.Artists || []).join(', ');
+                        var same = !t.Changed;
+                        return '<tr><td>' + esc((t.Disc ? t.Disc + '.' : '') + (t.Number || '')) + '</td><td>' + esc(t.Name) + '</td>'
+                            + '<td>' + (same ? '<span class="tml-same">' + esc(next) + '</span>' : '<span class="tml-old">' + esc(cur) + '</span><br><span class="tml-new">' + esc(next) + '</span>') + '</td>'
+                            + '<td>' + esc(t.CreditSource) + '</td></tr>';
+                    }).join('');
+                    return '<table class="tml-table"><thead><tr><th>#</th><th>Piste</th><th>Artistes (avant → après)</th><th>Crédit</th></tr></thead><tbody>' + rows + '</tbody></table>';
+                }
+
+                function renderLibrary(lib, index) {
+                    var s = lib.Summary;
+                    var hidden = s.Removed.filter(function (r) { return r.Fate === 'Hidden'; });
+                    var merged = s.Removed.filter(function (r) { return r.Fate === 'Merged'; });
+                    var deleted = s.Removed.filter(function (r) { return r.Fate === 'Deleted'; });
+                    var html = '<h3>' + esc(lib.Name) + '</h3>'
+                        + '<div class="tml-cards">'
+                        + '<div class="tml-card"><b>' + s.CurrentArtistsTab + ' → ' + s.ProposedArtists.length + '</b>onglet « Artistes »</div>'
+                        + '<div class="tml-card"><b>' + s.CurrentAlbumArtistsTab + '</b>« Artistes de l\'album » aujourd\'hui</div>'
+                        + '<div class="tml-card"><b>' + s.ChangedAlbums + ' / ' + s.Albums + '</b>albums modifiés</div>'
+                        + '<div class="tml-card"><b>' + s.ChangedTracks + ' / ' + s.Tracks + '</b>pistes modifiées</div>'
+                        + '<div class="tml-card"><b>' + (s.ByFlag.Disagreement || 0) + '</b>désaccords</div>'
+                        + '</div>'
+                        + '<p class="fieldDescription">Fournisseurs : ' + esc(s.Fetchers.join(' → ')) + ' — sources des décisions : '
+                        + esc(Object.keys(s.BySource).map(function (k) { return (SOURCE_LABELS[k] || k) + ' ' + s.BySource[k]; }).join(', ')) + '</p>'
+                        + s.Notes.map(function (n) { return '<p class="fieldDescription">⚠ ' + esc(n) + '</p>'; }).join('')
+                        + '<details open><summary>Artistes proposés (' + s.ProposedArtists.length + ')</summary><div class="tml-chips">'
+                        + s.ProposedArtists.map(function (a) { return '<span title="' + a.Albums + ' album(s)">' + esc(a.Name) + '</span>'; }).join('') + '</div></details>'
+                        + '<details><summary>Quittent la liste : ' + hidden.length + ' invités (fiche gardée), ' + merged.length + ' fusionnées, ' + deleted.length + ' fiches parasites (supprimées par la réparation)</summary>'
+                        + '<p>Invités :</p><div class="tml-chips">' + hidden.map(function (r) { return '<span class="' + (r.Favorites || r.Played ? 'tml-warn' : '') + '">' + esc(r.Name) + '</span>'; }).join('') + '</div>'
+                        + '<p>Fusionnées (même artiste, autre nom) :</p><div class="tml-chips">' + merged.map(function (r) { return '<span class="' + (r.Favorites || r.Played ? 'tml-warn' : '') + '">' + esc(r.Name) + ' → ' + esc(r.Into) + '</span>'; }).join('') + '</div>'
+                        + '<p>Parasites :</p><div class="tml-chips">' + deleted.map(function (r) { return '<span class="' + (r.Favorites || r.Played ? 'tml-warn' : '') + '" title="' + (r.Favorites ? 'favori ' : '') + (r.Played ? 'écouté' : '') + '">' + esc(r.Name) + '</span>'; }).join('') + '</div></details>'
+                        + '<details><summary>Fiches renommées (' + s.Renames.length + ')</summary><div class="tml-chips">'
+                        + s.Renames.map(function (r) { return '<span>' + esc(r.From) + ' → ' + esc(r.To) + '</span>'; }).join('') + '</div></details>'
+                        + '<div class="tml-filters">' + FILTERS.map(function (f) {
+                            return '<button is="emby-button" type="button" class="emby-button ' + (filter === f[0] ? 'tml-on' : '') + '" data-filter="' + f[0] + '">' + f[1] + '</button>';
+                        }).join('') + '</div>';
+
+                    var rows = lib.Albums.filter(matches).map(function (a, i) {
+                        var id = 'tml-' + index + '-' + i;
+                        var badges = flags(a.Flags).map(function (f) { return '<span class="tml-flag tml-flag-' + f + '">' + esc(FLAG_LABELS[f] || f) + '</span>'; }).join('');
+                        return '<tr class="tml-album" data-target="' + id + '"><td>' + esc(a.Path) + '<br><small>' + esc(a.ReleaseType || '') + '</small></td>'
+                            + '<td>' + (a.Changed ? '<span class="tml-old">' + esc((a.CurrentAlbumArtists || []).join(', ')) + '</span>' : '<span class="tml-same">' + esc((a.CurrentAlbumArtists || []).join(', ')) + '</span>') + '</td>'
+                            + '<td><b>' + esc(names(a.MainArtists)) + '</b></td>'
+                            + '<td>' + esc(sourceLabel(a)) + '<br><small>' + esc(confidenceLabel(a.Confidence)) + '</small></td>'
+                            + '<td>' + badges + '<br><small>' + esc((a.Notes || []).join(' · ')) + '</small></td></tr>'
+                            + '<tr class="tml-tracks" id="' + id + '" style="display:none"><td colspan="5">' + renderTracks(a) + '</td></tr>';
+                    }).join('');
+                    html += '<table class="tml-table"><thead><tr><th>Album</th><th>Actuel</th><th>Proposé</th><th>Source</th><th>Remarques</th></tr></thead><tbody>'
+                        + (rows || '<tr><td colspan="5">Aucun album pour ce filtre.</td></tr>') + '</tbody></table>';
+                    return html;
+                }
+
+                function renderReport() {
+                    var el = page.querySelector('#tmlReport');
+                    if (!report) { el.innerHTML = '<p class="fieldDescription">Pas encore d\'analyse.</p>'; return; }
+                    var mb = report.MusicBrainz || {};
+                    el.innerHTML = '<p class="fieldDescription">Analyse du ' + esc(new Date(report.GeneratedAt).toLocaleString())
+                        + ' — MusicBrainz : ' + (mb.Requests || 0) + ' requêtes, ' + (mb.CacheHits || 0) + ' en cache, ' + (mb.Failures || 0) + ' échecs.</p>'
+                        + report.Libraries.map(renderLibrary).join('');
+                }
+
+                function loadReport() {
+                    return ApiClient.fetch({ url: ApiClient.getUrl('TrueMusicLibrary/Analysis'), type: 'GET', dataType: 'json' })
+                        .then(function (r) { report = r; renderReport(); })
+                        .catch(function () { report = null; renderReport(); });
+                }
+
+                var TASK_LABELS = { analyze: 'Analyse', repair: 'Réparation', restore: 'Restauration' };
+
+                function isRunning(t) { return t && (t.state === 'Running' || t.state === 'Cancelling'); }
+
+                function loadLastOperation() {
+                    var el = page.querySelector('#tmlLastOperation');
+                    ApiClient.fetch({ url: ApiClient.getUrl('TrueMusicLibrary/Operation/Last'), type: 'GET', dataType: 'json' }).then(function (r) {
+                        var label = { Restore: 'Dernière restauration', Scan: 'Dernière mise à jour après scan' }[r.Operation] || 'Dernière réparation';
+                        el.innerHTML = '<p class="fieldDescription">' + label + ' : ' + esc(new Date(r.FinishedAt || r.StartedAt).toLocaleString()) + ' — '
+                            + r.AlbumsUpdated + ' albums, ' + r.TracksUpdated + ' pistes, ' + r.ArtistsRenamed + ' fiches renommées, '
+                            + r.ArtistsCreated + ' créées, ' + r.ArtistsDeleted + ' supprimées'
+                            + (r.Skipped ? ', ' + r.Skipped + ' ignorés' : '')
+                            + (r.RemainingAlbumChanges != null ? ' ; reste à changer : ' + r.RemainingAlbumChanges + ' albums, ' + r.RemainingTrackChanges + ' pistes' : '')
+                            + (r.SnapshotId ? ' (instantané ' + esc(r.SnapshotId) + ')' : '') + '</p>'
+                            + (r.Errors && r.Errors.length ? '<p class="fieldDescription">⚠ ' + r.Errors.length + ' erreur(s) : ' + esc(r.Errors.slice(0, 5).join(' ; ')) + '</p>' : '');
+                    }).catch(function () { el.innerHTML = ''; });
+                }
+
+                function pollStatus() {
+                    ApiClient.fetch({ url: ApiClient.getUrl('TrueMusicLibrary/Tasks/Status'), type: 'GET', dataType: 'json' }).then(function (s) {
+                        var el = page.querySelector('#tmlAnalysisState');
+                        var running = ['analyze', 'repair', 'restore'].filter(function (k) { return isRunning(s[k]); })[0];
+                        page.querySelector('#btnAnalyze').disabled = !!running;
+                        page.querySelector('#btnRepair').disabled = !!running;
+                        page.querySelector('#btnRestore').disabled = !!running || !s.canRestore;
+                        if (running) {
+                            el.textContent = TASK_LABELS[running] + ' en cours : ' + Math.round(s[running].progress || 0) + ' %';
+                            pollTimer = setTimeout(pollStatus, 2000);
+                            return;
+                        }
+
+                        var a = s.analyze || {};
+                        el.textContent = a.lastStatus ? 'Dernière analyse : ' + (STATUS_LABELS[a.lastStatus] || a.lastStatus) + (a.lastError ? ' — ' + a.lastError : '') : '';
+                        ['repair', 'restore'].forEach(function (k) {
+                            if (s[k] && s[k].lastStatus && s[k].lastStatus !== 'Completed' && s[k].lastError) {
+                                el.textContent += ' — ' + TASK_LABELS[k] + ' : ' + s[k].lastError;
+                            }
+                        });
+                        if (pollTimer) { pollTimer = null; loadReport(); loadLastOperation(); loadStatus(); }
+                    });
+                }
+
+                function runTask(path) {
+                    ApiClient.fetch({ url: ApiClient.getUrl(path), type: 'POST' }).then(function () {
+                        pollTimer = setTimeout(pollStatus, 1000);
+                    });
+                }
+
+                page.querySelector('#btnAnalyze').addEventListener('click', function () { runTask('TrueMusicLibrary/Analysis/Run'); });
+
+                page.querySelector('#btnRepair').addEventListener('click', function () {
+                    var albums = 0, tracks = 0, deleted = 0, renames = 0;
+                    (report ? report.Libraries : []).forEach(function (l) {
+                        albums += l.Summary.ChangedAlbums; tracks += l.Summary.ChangedTracks; renames += l.Summary.Renames.length;
+                        deleted += l.Summary.Removed.filter(function (r) { return r.Fate !== 'Hidden'; }).length;
+                    });
+                    var message = report
+                        ? 'Réparer la médiathèque ?\n\nD\'après la dernière analyse : ' + albums + ' albums et ' + tracks + ' pistes modifiés, '
+                          + renames + ' fiches renommées, ' + deleted + ' fiches parasites ou fusionnées supprimées.\n\n'
+                          + 'Avez-vous fait une sauvegarde Jellyfin ? Un instantané permet de restaurer, mais une sauvegarde reste recommandée.'
+                        : 'Aucune analyse affichée : la réparation va analyser puis appliquer. Continuer ?';
+                    if (window.confirm(message)) { runTask('TrueMusicLibrary/Repair/Run'); }
+                });
+
+                page.querySelector('#btnRestore').addEventListener('click', function () {
+                    if (window.confirm('Restaurer la médiathèque telle qu\'elle était avant les réparations ?\n\nLes changements faits ensuite pendant les scans sont aussi défaits, et la persistance s\'arrête jusqu\'à la prochaine réparation.')) { runTask('TrueMusicLibrary/Restore/Run'); }
+                });
+
+                page.querySelector('#tmlReport').addEventListener('click', function (e) {
+                    var button = e.target.closest('[data-filter]');
+                    if (button) { filter = button.getAttribute('data-filter'); renderReport(); return; }
+                    var row = e.target.closest('tr.tml-album');
+                    if (row) {
+                        var detail = page.querySelector('#' + row.getAttribute('data-target'));
+                        detail.style.display = detail.style.display === 'none' ? '' : 'none';
+                    }
+                });
+
+                function loadStatus() {
+                    var el = page.querySelector('#TrueMusicLibraryStatus');
+                    ApiClient.fetch({ url: ApiClient.getUrl('TrueMusicLibrary/Status'), type: 'GET', dataType: 'json' })
+                        .then(function (s) {
+                            el.textContent = 'Version ' + s.version + ' (' + s.target + ')';
+                            var p = s.persistence || {};
+                            page.querySelector('#tmlPersistence').textContent = p.active
+                                ? 'Persistance active depuis le ' + new Date(p.since).toLocaleString() + ' : ' + p.albums + ' albums suivis'
+                                    + (p.updatedAt ? ', décisions mises à jour le ' + new Date(p.updatedAt).toLocaleString() : '') + '.'
+                                : (p.since ? 'Persistance coupée dans les réglages : les scans ne corrigent plus rien.' : 'Persistance inactive : la médiathèque n\'a pas été réparée (ou a été restaurée).');
+                        })
+                        .catch(function () { el.textContent = ''; });
+                }
+
+                page.addEventListener('pageshow', function () {
+                    Dashboard.showLoadingMsg();
+                    ApiClient.getPluginConfiguration(pluginId).then(function (config) {
+                        page.querySelector('#selCollaboration').value = config.Collaboration || 'Both';
+                        page.querySelector('#selCompilation').value = config.Compilation || 'FolderArtist';
+                        page.querySelector('#selDisplayName').value = config.DisplayName || 'MusicBrainz';
+                        page.querySelector('#txtVariousArtists').value = config.VariousArtistsName || '';
+                        page.querySelector('#txtGuestJoins').value = config.GuestJoinPhrases || '';
+                        page.querySelector('#txtWhitelist').value = config.NameWhitelist || '';
+                        page.querySelector('#chkRewrite').checked = config.EnableArtistsRouteRewrite !== false;
+                        page.querySelector('#chkPersistence').checked = config.EnablePersistence !== false;
+                        Dashboard.hideLoadingMsg();
+                        loadStatus();
+                        loadReport();
+                        loadLastOperation();
+                        pollStatus();
+                    });
+                });
+
+                page.querySelector('#TrueMusicLibraryConfigForm').addEventListener('submit', function (e) {
+                    e.preventDefault();
+                    Dashboard.showLoadingMsg();
+                    ApiClient.getPluginConfiguration(pluginId).then(function (config) {
+                        config.Collaboration = page.querySelector('#selCollaboration').value;
+                        config.Compilation = page.querySelector('#selCompilation').value;
+                        config.DisplayName = page.querySelector('#selDisplayName').value;
+                        config.VariousArtistsName = page.querySelector('#txtVariousArtists').value;
+                        config.GuestJoinPhrases = page.querySelector('#txtGuestJoins').value;
+                        config.NameWhitelist = page.querySelector('#txtWhitelist').value;
+                        config.EnableArtistsRouteRewrite = page.querySelector('#chkRewrite').checked;
+                        config.EnablePersistence = page.querySelector('#chkPersistence').checked;
+                        ApiClient.updatePluginConfiguration(pluginId, config).then(function (result) {
+                            Dashboard.processPluginConfigurationUpdateResult(result);
+                            loadStatus();
+                        });
+                    });
+                    return false;
+                });
+            })();
+        </script>
+    </div>
+</body>
+</html>

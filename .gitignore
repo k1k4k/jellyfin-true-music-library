@@ -1,0 +1,7 @@
+# build
+bin/
+obj/
+dist/
+out/
+__pycache__/
+*.zip

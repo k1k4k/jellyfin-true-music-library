@@ -1,0 +1,74 @@
+name: Release
+
+# Pousser un tag vX.Y.Z (la version doit correspondre à <AssemblyVersion> du csproj) :
+#   git tag v0.1.0 && git push origin v0.1.0
+# -> build jf12 + jf10, zips attachés à la release GitHub, manifest.json / manifest-10.11.json
+#    mis à jour et committés sur main. Les notes de la version (release + catalogue Jellyfin)
+#    sont prises dans CHANGELOG.md : sans section "## X.Y.Z", la publication échoue.
+# Le dépôt central k1k4k/jellyfin-plugins reprend ces manifestes à son prochain passage (toutes
+# les heures) ; avec le secret PLUGINS_REPO_TOKEN (PAT, droit "Contents: write" sur ce dépôt),
+# il est prévenu tout de suite.
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: |
+            9.0.x
+            10.0.x
+
+      - name: Check tag matches AssemblyVersion
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          VER=$(grep -oP '<AssemblyVersion>\K[\d.]+(?=</AssemblyVersion>)' Jellyfin.Plugin.TrueMusicLibrary/Jellyfin.Plugin.TrueMusicLibrary.csproj)
+          echo "tag=$TAG csproj=$VER"
+          [ "$VER" = "$TAG.0" ] || [ "$VER" = "$TAG" ] || { echo "Le tag ($TAG) ne correspond pas à AssemblyVersion ($VER)"; exit 1; }
+
+      - name: Build jf12 (.NET 10)
+        run: dotnet build Jellyfin.Plugin.TrueMusicLibrary/Jellyfin.Plugin.TrueMusicLibrary.csproj -c Release -p:JellyfinTarget=jf12 -o out/jf12
+
+      - name: Build jf10 (.NET 9)
+        run: dotnet build Jellyfin.Plugin.TrueMusicLibrary/Jellyfin.Plugin.TrueMusicLibrary.csproj -c Release -p:JellyfinTarget=jf10 -o out/jf10
+
+      - name: Package + update manifests
+        run: |
+          python3 scripts/package.py --target jf12 --dll out/jf12/Jellyfin.Plugin.TrueMusicLibrary.dll --repo "$GITHUB_REPOSITORY" --tag "$GITHUB_REF_NAME" --notes-out dist/release-notes.md
+          python3 scripts/package.py --target jf10 --dll out/jf10/Jellyfin.Plugin.TrueMusicLibrary.dll --repo "$GITHUB_REPOSITORY" --tag "$GITHUB_REF_NAME"
+          ls -la dist
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v3
+        with:
+          files: dist/*.zip
+          body_path: dist/release-notes.md
+
+      - name: Commit manifests
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add manifest.json manifest-10.11.json
+          git commit -m "manifests: $GITHUB_REF_NAME" || echo "nothing to commit"
+          git push origin HEAD:main
+
+      - name: Notify central plugin repository
+        env:
+          TOKEN: ${{ secrets.PLUGINS_REPO_TOKEN }}
+        run: |
+          if [ -z "$TOKEN" ]; then echo "PLUGINS_REPO_TOKEN absent : le dépôt central se mettra à jour à son prochain passage."; exit 0; fi
+          curl -fsS -X POST -H "Authorization: Bearer $TOKEN" -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/k1k4k/jellyfin-plugins/dispatches \
+            -d "{\"event_type\":\"plugin-released\",\"client_payload\":{\"repo\":\"$GITHUB_REPOSITORY\",\"tag\":\"$GITHUB_REF_NAME\"}}"
