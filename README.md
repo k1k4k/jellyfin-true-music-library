@@ -32,7 +32,7 @@ The plugin is in the k1k4k plugin repository: **Dashboard → Plugins → Manage
 | 12.x | `https://k1k4k.github.io/jellyfin-plugins/manifest.json` |
 | 10.11.x | `https://k1k4k.github.io/jellyfin-plugins/manifest-10.11.json` |
 
-Then **Plugins → Catalog → True Music Library → Install**, and restart Jellyfin.
+Then **Plugins → Catalog → Jellyfin True Music Library → Install**, and restart Jellyfin.
 
 Without the catalog, the install scripts copy the plugin into Jellyfin's `plugins` folder (latest release, a release zip, or built from these sources), picking the right build for your server version:
 
@@ -52,7 +52,7 @@ Then restart Jellyfin.
 
 ## Use
 
-**Dashboard → Plugins → True Music Library**: **Analyze**, read the report, **Repair**. "Restore" undoes everything. The three actions also exist as scheduled tasks. In the report, unfold an album to impose its main artists by hand.
+**Dashboard → Plugins → Jellyfin True Music Library**: **Analyze**, read the report, **Repair**. "Restore" undoes everything. The three actions also exist as scheduled tasks. In the report, unfold an album to impose its main artists by hand.
 
 Settings: collaborations (`A & B` under both artists, or the first one only), compilations and soundtracks (folder artist, "Various Artists", or none), name spelling (MusicBrainz, folder, tags), guest join phrases, names never to split (`AC/DC`, `Earth, Wind & Fire`…), persistence, single "Artists" tab, guests hidden from search, "Album Artists" tab hidden in the web interface.
 

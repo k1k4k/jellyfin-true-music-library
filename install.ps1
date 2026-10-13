@@ -3,7 +3,7 @@
     Installe (ou désinstalle) le plugin Jellyfin True Music Library sans passer par le catalogue de Jellyfin.
 
 .DESCRIPTION
-    - Copie Jellyfin.Plugin.TrueMusicLibrary.dll dans <plugins>\True Music Library_<version>\ avec son meta.json,
+    - Copie Jellyfin.Plugin.TrueMusicLibrary.dll dans <plugins>\Jellyfin True Music Library_<version>\ avec son meta.json,
       comme le fait le catalogue de Jellyfin ; les anciennes versions de ce plugin sont retirées.
     - La DLL vient, au choix : d'un zip de release (-Zip), d'une compilation des sources (-Build, SDK .NET requis),
       sinon de la dernière release GitHub (téléchargée).
@@ -54,7 +54,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $Guid      = '541fb644-193a-4692-b8a4-2593356153a7'
-$Name      = 'True Music Library'
+$Name      = 'Jellyfin True Music Library'
 $DllName   = 'Jellyfin.Plugin.TrueMusicLibrary.dll'
 $Repo      = 'k1k4k/jellyfin-true-music-library'
 $Project   = Join-Path $PSScriptRoot 'Jellyfin.Plugin.TrueMusicLibrary\Jellyfin.Plugin.TrueMusicLibrary.csproj'
@@ -73,14 +73,15 @@ if (-not $PluginsDir) {
 }
 if (-not (Test-Path $PluginsDir)) { throw "Dossier introuvable : $PluginsDir" }
 
-# Dossiers de ce plugin (toutes versions) : meta.json avec notre GUID, ou nom « True Music Library_x » / « TrueMusicLibrary_x ».
+# Dossiers de ce plugin (toutes versions) : meta.json avec notre GUID, ou nom « Jellyfin True Music Library_x »,
+# « True Music Library_x » (0.1.0) ou « TrueMusicLibrary_x ».
 function Get-PluginFolders {
     Get-ChildItem -Path $PluginsDir -Directory | Where-Object {
         $meta = Join-Path $_.FullName 'meta.json'
         if (Test-Path $meta) {
             try { return ((Get-Content $meta -Raw -Encoding UTF8 | ConvertFrom-Json).guid -eq $Guid) } catch { }
         }
-        return ($_.Name -like "$Name`_*") -or ($_.Name -like 'TrueMusicLibrary_*')
+        return ($_.Name -like "$Name`_*") -or ($_.Name -like 'True Music Library_*') -or ($_.Name -like 'TrueMusicLibrary_*')
     }
 }
 
@@ -99,7 +100,7 @@ function Remove-Folders($folders) {
 
 if ($Uninstall) {
     $folders = @(Get-PluginFolders)
-    if ($folders.Count -eq 0) { Write-Host 'True Music Library n''est pas installé dans ce dossier.'; exit 0 }
+    if ($folders.Count -eq 0) { Write-Host 'Jellyfin True Music Library n''est pas installé dans ce dossier.'; exit 0 }
     $locked = Remove-Folders $folders
     if ($locked.Count -gt 0) {
         Write-Host "Fichiers utilisés par Jellyfin, à supprimer après l'avoir arrêté : $($locked -join ', ')" -ForegroundColor Yellow
@@ -168,7 +169,7 @@ try {
     if (-not (Test-Path $dll)) { throw "$DllName absent." }
     $version = (Get-Item $dll).VersionInfo.FileVersion
 
-    # --- Copie : <plugins>\True Music Library_<version>\ + meta.json -----------------------------------------
+    # --- Copie : <plugins>\Jellyfin True Music Library_<version>\ + meta.json -----------------------------------------
     $old = @(Get-PluginFolders | Where-Object { $_.Name -ne "$Name`_$version" })
     $dest = Join-Path $PluginsDir "$Name`_$version"
     New-Item -ItemType Directory -Path $dest -Force | Out-Null
@@ -216,4 +217,4 @@ if ($RestartService) {
 } else {
     Write-Host 'Redémarrez Jellyfin pour charger le plugin (serveur Linux : sudo systemctl restart jellyfin).' -ForegroundColor Green
 }
-Write-Host 'Puis : Tableau de bord → Extensions → True Music Library → Analyser. Sauvegarde Jellyfin conseillée avant « Réparer ».'
+Write-Host 'Puis : Tableau de bord → Extensions → Jellyfin True Music Library → Analyser. Sauvegarde Jellyfin conseillée avant « Réparer ».'

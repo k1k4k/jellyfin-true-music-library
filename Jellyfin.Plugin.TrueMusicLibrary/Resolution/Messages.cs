@@ -40,7 +40,7 @@ public static class Messages
     public static string VariousArtists => T("Artistes variés", "Various Artists");
 
     // Tâches planifiées
-    public static string Category => "True Music Library";
+    public static string Category => "Jellyfin True Music Library";
 
     public static string AnalyzeName => T("Analyser la médiathèque musicale", "Analyze the music library");
 

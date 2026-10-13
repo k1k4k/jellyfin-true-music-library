@@ -2,6 +2,10 @@
 
 What's new in each version, as shown in Jellyfin's plugin catalog.
 
+## 0.1.1
+
+- Renamed "Jellyfin True Music Library", like the other k1k4k plugins.
+
 ## 0.1.0
 
 - One "Artists" list with only the main artists of albums, singles and EPs, chosen from the library's metadata providers (MusicBrainz, TheAudioDB…), then the tags, then the artist folder. Collaborations show up under each artist; compilations and soundtracks under the folder artist.

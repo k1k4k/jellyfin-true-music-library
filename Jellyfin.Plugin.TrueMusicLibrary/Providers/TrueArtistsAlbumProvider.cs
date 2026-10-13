@@ -37,7 +37,7 @@ public class TrueArtistsAlbumProvider : ICustomMetadataProvider<MusicAlbum>, IHa
     }
 
     /// <inheritdoc />
-    public string Name => "True Music Library";
+    public string Name => "Jellyfin True Music Library";
 
     /// <inheritdoc />
     public int Order => 1000;

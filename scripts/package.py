@@ -23,7 +23,7 @@ import re
 import zipfile
 
 GUID = "541fb644-193a-4692-b8a4-2593356153a7"
-NAME = "True Music Library"
+NAME = "Jellyfin True Music Library"
 TARGETS = {
     "jf12": {"manifest": "manifest.json", "targetAbi": "12.0.0.0", "framework": "net10.0"},
     "jf10": {"manifest": "manifest-10.11.json", "targetAbi": "10.11.0.0", "framework": "net9.0"},

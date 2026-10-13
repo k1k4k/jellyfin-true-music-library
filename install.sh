@@ -7,13 +7,13 @@
 #   sudo ./install.sh --plugins-dir /chemin/plugins --url http://localhost:8096 --restart
 #   sudo ./install.sh --uninstall
 #
-# Copie Jellyfin.Plugin.TrueMusicLibrary.dll dans <plugins>/True Music Library_<version>/ avec son meta.json, comme
+# Copie Jellyfin.Plugin.TrueMusicLibrary.dll dans <plugins>/Jellyfin True Music Library_<version>/ avec son meta.json, comme
 # le catalogue de Jellyfin, et retire les anciennes versions de ce plugin. Redémarrer Jellyfin ensuite (--restart :
 # systemctl restart jellyfin). Faites une sauvegarde Jellyfin avant la première réparation de la médiathèque.
 set -euo pipefail
 
 GUID="541fb644-193a-4692-b8a4-2593356153a7"
-NAME="True Music Library"
+NAME="Jellyfin True Music Library"
 DLL="Jellyfin.Plugin.TrueMusicLibrary.dll"
 REPO="k1k4k/jellyfin-true-music-library"
 
@@ -39,12 +39,13 @@ done
 
 [ -d "$PLUGINS_DIR" ] || { echo "Dossier des plugins introuvable : $PLUGINS_DIR (--plugins-dir)" >&2; exit 1; }
 
-# Dossiers de ce plugin (toutes versions) : meta.json avec notre GUID, ou nom « True Music Library_x » / « TrueMusicLibrary_x ».
+# Dossiers de ce plugin (toutes versions) : meta.json avec notre GUID, ou nom « Jellyfin True Music Library_x »,
+# « True Music Library_x » (0.1.0) ou « TrueMusicLibrary_x ».
 plugin_folders() {
   for d in "$PLUGINS_DIR"/*/; do
     [ -d "$d" ] || continue
     d="${d%/}"
-    if { [ -f "$d/meta.json" ] && grep -q "$GUID" "$d/meta.json"; } || [[ "$(basename "$d")" == "$NAME"_* ]] || [[ "$(basename "$d")" == TrueMusicLibrary_* ]]; then
+    if { [ -f "$d/meta.json" ] && grep -q "$GUID" "$d/meta.json"; } || [[ "$(basename "$d")" == "$NAME"_* ]] || [[ "$(basename "$d")" == "True Music Library"_* ]] || [[ "$(basename "$d")" == TrueMusicLibrary_* ]]; then
       printf '%s\n' "$d"
     fi
   done
@@ -65,7 +66,7 @@ if [ "$UNINSTALL" = 1 ]; then
     rm -rf -- "$d" && echo "Supprimé : $d"
     found=1
   done < <(plugin_folders)
-  [ "$found" = 1 ] || echo "True Music Library n'est pas installé dans $PLUGINS_DIR."
+  [ "$found" = 1 ] || echo "Jellyfin True Music Library n'est pas installé dans $PLUGINS_DIR."
   echo "Les données du plugin (analyse, instantanés) restent dans <données Jellyfin>/plugins/configurations/TrueMusicLibrary."
   restart_hint
   exit 0
@@ -144,4 +145,4 @@ owner="$(stat -c '%U:%G' "$PLUGINS_DIR" 2>/dev/null || true)"
 
 echo "Installé : $dest ($TARGET, version $version)"
 restart_hint
-echo "Puis : Tableau de bord → Extensions → True Music Library → Analyser. Sauvegarde Jellyfin conseillée avant « Réparer »."
+echo "Puis : Tableau de bord → Extensions → Jellyfin True Music Library → Analyser. Sauvegarde Jellyfin conseillée avant « Réparer »."

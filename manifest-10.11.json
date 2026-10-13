@@ -1,7 +1,7 @@
 [
   {
     "guid": "541fb644-193a-4692-b8a4-2593356153a7",
-    "name": "True Music Library",
+    "name": "Jellyfin True Music Library",
     "description": "Un seul onglet « Artistes », avec seulement les artistes principaux des albums, singles et EP, choisis d'après les fournisseurs de métadonnées. A single \"Artists\" tab, listing only the main artists of albums, singles and EPs, chosen from your metadata providers.",
     "overview": "Une médiathèque musicale sans artistes parasites. A music library without stray artists.",
     "owner": "k1k4k",

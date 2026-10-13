@@ -29,7 +29,7 @@ public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
 
     public static Plugin? Instance { get; private set; }
 
-    public override string Name => "True Music Library";
+    public override string Name => "Jellyfin True Music Library";
 
     public override Guid Id => Guid.Parse("541fb644-193a-4692-b8a4-2593356153a7");
 
