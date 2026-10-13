@@ -1,7 +1,5 @@
 # Jellyfin True Music Library
 
-**En développement : pas encore de version publiée.** L'analyse, la réparation, la restauration, la persistance et la vue « Artistes » unique fonctionnent (testées sur Jellyfin 12.1 et 10.11). Reste à faire : les choix manuels par album dans l'interface.
-
 Un seul onglet « Artistes », avec seulement les artistes principaux des albums, singles et EP, choisis d'après les fournisseurs de métadonnées de la bibliothèque (MusicBrainz, TheAudioDB…). Les invités restent crédités sur leurs pistes sans encombrer la liste. Une action « Réparer » corrige la médiathèque existante, et les scans suivants gardent le résultat.
 
 [English version](README.md)
@@ -27,12 +25,14 @@ Aucun fichier audio n'est modifié. Aucune métadonnée n'est verrouillée : dé
 
 **Faites une sauvegarde Jellyfin avant la première réparation** (12.x : Tableau de bord → Sauvegardes).
 
-Dès qu'une version sera publiée, le plugin sera dans le dépôt de plugins k1k4k : **Tableau de bord → Extensions → Gérer les dépôts → `+`**
+Le plugin est dans le dépôt de plugins k1k4k : **Tableau de bord → Extensions → Gérer les dépôts → `+`**
 
 | Jellyfin | Adresse |
 |---|---|
 | 12.x | `https://k1k4k.github.io/jellyfin-plugins/manifest.json` |
 | 10.11.x | `https://k1k4k.github.io/jellyfin-plugins/manifest-10.11.json` |
+
+Puis **Extensions → Catalogue → True Music Library → Installer**, et redémarrez Jellyfin.
 
 Sans le catalogue, les scripts d'installation copient le plugin dans le dossier `plugins` de Jellyfin (dernière version publiée, un zip de version, ou compilé depuis ces sources), dans la variante qui correspond à la version du serveur :
 
@@ -52,7 +52,7 @@ Puis redémarrez Jellyfin.
 
 ## Utilisation
 
-**Tableau de bord → Extensions → True Music Library** : **Analyser**, lire le rapport, **Réparer**. « Restaurer » revient sur tout. Les trois actions existent aussi en tâches planifiées.
+**Tableau de bord → Extensions → True Music Library** : **Analyser**, lire le rapport, **Réparer**. « Restaurer » revient sur tout. Les trois actions existent aussi en tâches planifiées. Dans le rapport, dépliez un album pour imposer ses artistes principaux à la main.
 
 Réglages : collaborations (`A & B` chez les deux artistes, ou le premier seulement), compilations et BO (artiste du dossier, « Artistes variés », ou aucun), écriture des noms (MusicBrainz, dossier, tags), jointures d'invité, noms à ne jamais couper (`AC/DC`, `Earth, Wind & Fire`…), persistance, onglet « Artistes » unique, invités retirés de la recherche, onglet « Artistes de l'album » caché dans l'interface web.
 

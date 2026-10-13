@@ -1,7 +1,5 @@
 # Jellyfin True Music Library
 
-**In development: no release yet.** Analysis, repair, restore, persistence and the single "Artists" view are working (tested on Jellyfin 12.1 and 10.11). Still to come: per-album overrides in the UI.
-
 A single "Artists" tab, listing only the main artists of albums, singles and EPs, chosen from the library's metadata providers (MusicBrainz, TheAudioDB…). Featured artists stay credited on their tracks without cluttering the list. A "Repair" action fixes the existing library, and later scans keep the result.
 
 [Version française](README.fr.md)
@@ -27,12 +25,14 @@ Nothing is written to audio files. No metadata is locked: uninstalling the plugi
 
 **Back up Jellyfin before the first repair** (12.x: Dashboard → Backups).
 
-Once a release is published, the plugin will be in the k1k4k plugin repository: **Dashboard → Plugins → Manage Repositories → `+`**
+The plugin is in the k1k4k plugin repository: **Dashboard → Plugins → Manage Repositories → `+`**
 
 | Jellyfin | URL |
 |---|---|
 | 12.x | `https://k1k4k.github.io/jellyfin-plugins/manifest.json` |
 | 10.11.x | `https://k1k4k.github.io/jellyfin-plugins/manifest-10.11.json` |
+
+Then **Plugins → Catalog → True Music Library → Install**, and restart Jellyfin.
 
 Without the catalog, the install scripts copy the plugin into Jellyfin's `plugins` folder (latest release, a release zip, or built from these sources), picking the right build for your server version:
 
@@ -52,7 +52,7 @@ Then restart Jellyfin.
 
 ## Use
 
-**Dashboard → Plugins → True Music Library**: **Analyze**, read the report, **Repair**. "Restore" undoes everything. The three actions also exist as scheduled tasks.
+**Dashboard → Plugins → True Music Library**: **Analyze**, read the report, **Repair**. "Restore" undoes everything. The three actions also exist as scheduled tasks. In the report, unfold an album to impose its main artists by hand.
 
 Settings: collaborations (`A & B` under both artists, or the first one only), compilations and soundtracks (folder artist, "Various Artists", or none), name spelling (MusicBrainz, folder, tags), guest join phrases, names never to split (`AC/DC`, `Earth, Wind & Fire`…), persistence, single "Artists" tab, guests hidden from search, "Album Artists" tab hidden in the web interface.
 
