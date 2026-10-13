@@ -40,6 +40,9 @@ public sealed class PersistenceState
     /// <summary>Décisions en vigueur, même si le réglage coupe la persistance.</summary>
     public AppliedState? State => Load()?.State;
 
+    /// <summary>Règles en vigueur dès que la médiathèque est réparée, même si le réglage coupe la persistance (listes d'artistes).</summary>
+    public LiveRules? RepairedRules => Load();
+
     /// <summary>Après « Réparer » ou la tâche d'après scan : nouvelles décisions en vigueur.</summary>
     public void Activate(AppliedState state)
     {

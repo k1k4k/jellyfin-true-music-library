@@ -8,9 +8,18 @@ public class PluginConfiguration : BasePluginConfiguration
 {
     /// <summary>
     /// Onglet unique côté serveur : <c>GET /Artists</c> est servi comme <c>GET /Artists/AlbumArtists</c>,
-    /// pour tous les clients. Pris en compte immédiatement, sans redémarrage.
+    /// pour tous les clients, une fois la médiathèque réparée. Pris en compte immédiatement, sans redémarrage.
     /// </summary>
     public bool EnableArtistsRouteRewrite { get; set; } = true;
+
+    /// <summary>
+    /// Une fois la médiathèque réparée, les fiches artiste qui ne sont artiste principal d'aucune sortie (les invités) sont
+    /// retirées des résultats de la recherche (<c>/Search/Hints</c>) et des listes <c>/Items</c>. Leur page reste accessible.
+    /// </summary>
+    public bool HideGuestArtists { get; set; } = true;
+
+    /// <summary>Interface web : cache l'onglet « Artistes de l'album » des bibliothèques musique, une fois la médiathèque réparée.</summary>
+    public bool HideAlbumArtistsTab { get; set; } = true;
 
     /// <summary>
     /// Persistance : une fois la médiathèque réparée, les scans et les actualisations gardent les artistes

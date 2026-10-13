@@ -6,6 +6,7 @@ using Jellyfin.Plugin.TrueMusicLibrary.Web;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Plugins;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Jellyfin.Plugin.TrueMusicLibrary;
@@ -27,5 +28,8 @@ public class PluginServiceRegistrator : IPluginServiceRegistrator
         serviceCollection.AddSingleton<Apply.LibraryApplier>();
         serviceCollection.AddSingleton<PersistenceState>();
         serviceCollection.AddSingleton<IStartupFilter, ArtistsRouteRewriteStartupFilter>();
+        serviceCollection.AddSingleton<IStartupFilter, ScriptInjectionStartupFilter>();
+        serviceCollection.AddSingleton<GuestArtistsResultFilter>();
+        serviceCollection.Configure<MvcOptions>(options => options.Filters.AddService<GuestArtistsResultFilter>());
     }
 }

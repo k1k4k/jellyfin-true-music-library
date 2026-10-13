@@ -121,7 +121,28 @@
                             <span>Onglet unique côté serveur</span>
                         </label>
                         <div class="fieldDescription checkboxFieldDescription">
-                            La liste « Artistes » est servie comme « Artistes de l'album », pour tous les clients. Effet immédiat.
+                            Une fois la médiathèque réparée, la liste « Artistes » est servie comme « Artistes de l'album », pour tous les clients. Effet immédiat.
+                        </div>
+                    </div>
+
+                    <div class="checkboxContainer checkboxContainer-withDescription">
+                        <label class="emby-checkbox-label">
+                            <input id="chkHideGuests" type="checkbox" is="emby-checkbox" />
+                            <span>Invités retirés de la recherche et des listes</span>
+                        </label>
+                        <div class="fieldDescription checkboxFieldDescription">
+                            Une fois la médiathèque réparée, les artistes qui ne sont principaux d'aucune sortie n'apparaissent plus dans la
+                            recherche ni dans les listes d'artistes des autres clients. Leur page reste accessible depuis leurs pistes.
+                        </div>
+                    </div>
+
+                    <div class="checkboxContainer checkboxContainer-withDescription">
+                        <label class="emby-checkbox-label">
+                            <input id="chkHideTab" type="checkbox" is="emby-checkbox" />
+                            <span>Cacher l'onglet « Artistes de l'album » (interface web)</span>
+                        </label>
+                        <div class="fieldDescription checkboxFieldDescription">
+                            Une fois la médiathèque réparée, il ne montre plus que la même liste que « Artistes ». Rechargez la page web après un changement.
                         </div>
                     </div>
 
@@ -346,6 +367,8 @@
                         page.querySelector('#txtWhitelist').value = config.NameWhitelist || '';
                         page.querySelector('#chkRewrite').checked = config.EnableArtistsRouteRewrite !== false;
                         page.querySelector('#chkPersistence').checked = config.EnablePersistence !== false;
+                        page.querySelector('#chkHideGuests').checked = config.HideGuestArtists !== false;
+                        page.querySelector('#chkHideTab').checked = config.HideAlbumArtistsTab !== false;
                         Dashboard.hideLoadingMsg();
                         loadStatus();
                         loadReport();
@@ -366,6 +389,8 @@
                         config.NameWhitelist = page.querySelector('#txtWhitelist').value;
                         config.EnableArtistsRouteRewrite = page.querySelector('#chkRewrite').checked;
                         config.EnablePersistence = page.querySelector('#chkPersistence').checked;
+                        config.HideGuestArtists = page.querySelector('#chkHideGuests').checked;
+                        config.HideAlbumArtistsTab = page.querySelector('#chkHideTab').checked;
                         ApiClient.updatePluginConfiguration(pluginId, config).then(function (result) {
                             Dashboard.processPluginConfigurationUpdateResult(result);
                             loadStatus();

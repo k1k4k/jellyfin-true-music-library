@@ -1,3 +1,4 @@
+using Jellyfin.Plugin.TrueMusicLibrary.Persistence;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using Microsoft.AspNetCore.Builder;
@@ -13,6 +14,7 @@ namespace Jellyfin.Plugin.TrueMusicLibrary.Web;
 /// Middleware le plus externe (<see cref="IStartupFilter"/>) : la réécriture a lieu avant le routage,
 /// l'authentification et le <c>Map(BaseUrl)</c> de Jellyfin. Seul le chemin exact est concerné :
 /// <c>/Artists/{name}</c>, <c>/Artists/InstantMix</c>… ne sont pas touchés.
+/// Seulement une fois la médiathèque réparée : avant, « Artistes de l'album » n'est pas encore une liste fiable.
 /// </summary>
 public class ArtistsRouteRewriteStartupFilter : IStartupFilter
 {
@@ -23,10 +25,12 @@ public class ArtistsRouteRewriteStartupFilter : IStartupFilter
     private const string AlbumArtistsSegment = "/Artists/AlbumArtists";
 
     private readonly IServerConfigurationManager _configurationManager;
+    private readonly PersistenceState _persistence;
 
-    public ArtistsRouteRewriteStartupFilter(IServerConfigurationManager configurationManager)
+    public ArtistsRouteRewriteStartupFilter(IServerConfigurationManager configurationManager, PersistenceState persistence)
     {
         _configurationManager = configurationManager;
+        _persistence = persistence;
     }
 
     /// <inheritdoc />
@@ -60,7 +64,7 @@ public class ArtistsRouteRewriteStartupFilter : IStartupFilter
             && Plugin.Instance?.Configuration.EnableArtistsRouteRewrite == true)
         {
             var rewritten = GetRewrittenPath(context.Request.Path.Value, _configurationManager.GetNetworkConfiguration().BaseUrl);
-            if (rewritten is not null)
+            if (rewritten is not null && _persistence.RepairedRules is not null)
             {
                 context.Request.Path = new PathString(rewritten);
                 context.Response.Headers[MarkerHeader] = "AlbumArtists";

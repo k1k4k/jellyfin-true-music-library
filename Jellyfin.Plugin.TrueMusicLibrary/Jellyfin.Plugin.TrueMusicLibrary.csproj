@@ -39,6 +39,8 @@
   <ItemGroup>
     <None Remove="Configuration\configPage.html" />
     <EmbeddedResource Include="Configuration\configPage.html" />
+    <None Remove="Web/true-music-library.js" />
+    <EmbeddedResource Include="Web/true-music-library.js" LogicalName="Jellyfin.Plugin.TrueMusicLibrary.true-music-library.js" />
   </ItemGroup>
 
 </Project>

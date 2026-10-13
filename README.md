@@ -1,6 +1,6 @@
 # Jellyfin True Music Library
 
-**In development: no release yet.** Analysis, repair, restore and persistence are working (tested on Jellyfin 12.1 and 10.11). Still to come: hiding guests from search, the web tweaks, and per-album overrides in the UI.
+**In development: no release yet.** Analysis, repair, restore, persistence and the single "Artists" view are working (tested on Jellyfin 12.1 and 10.11). Still to come: per-album overrides in the UI.
 
 A single "Artists" tab, listing only the main artists of albums, singles and EPs, chosen from the library's metadata providers (MusicBrainz, TheAudioDB…). Featured artists stay credited on their tracks without cluttering the list. A "Repair" action fixes the existing library, and later scans keep the result.
 
@@ -16,7 +16,10 @@ Out of the box, Jellyfin lists in "Artists" every name found in a tag: `Artist A
 - **Repair**: applies the analysis. Album artists = main artists; track artists split (`A;B`, `feat.`, `&`…) with guests kept; one entry per artist, named the way MusicBrainz credits it most often in your library; stray `A;B` entries removed. A snapshot is written before anything changes.
 - **Persistence**: once repaired, the library stays repaired. Scans and "Replace all metadata" keep the decided artists (no network during the scan), and new albums are resolved right after each scan.
 - **Restore**: puts every item back the way it was before the first repair, or the way its file reads today if the file was re-read since, and stops the persistence.
-- **One "Artists" tab**: `/Artists` is served as `/Artists/AlbumArtists` on the server, for every client.
+- **One "Artists" tab**, once the library is repaired:
+  - the server serves `/Artists` as `/Artists/AlbumArtists`, for every client;
+  - guests no longer show up in search results nor in the artist lists of other clients (`/Search/Hints`, `/Items`); their page stays reachable from their tracks;
+  - the web interface hides the duplicate "Album Artists" tab.
 
 Nothing is written to audio files. No metadata is locked: uninstalling the plugin and running "Replace all metadata" gives you Jellyfin's own behaviour back.
 
@@ -51,7 +54,7 @@ Then restart Jellyfin.
 
 **Dashboard → Plugins → True Music Library**: **Analyze**, read the report, **Repair**. "Restore" undoes everything. The three actions also exist as scheduled tasks.
 
-Settings: collaborations (`A & B` under both artists, or the first one only), compilations and soundtracks (folder artist, "Various Artists", or none), name spelling (MusicBrainz, folder, tags), guest join phrases, names never to split (`AC/DC`, `Earth, Wind & Fire`…), persistence on/off, single "Artists" tab on/off.
+Settings: collaborations (`A & B` under both artists, or the first one only), compilations and soundtracks (folder artist, "Various Artists", or none), name spelling (MusicBrainz, folder, tags), guest join phrases, names never to split (`AC/DC`, `Earth, Wind & Fire`…), persistence, single "Artists" tab, guests hidden from search, "Album Artists" tab hidden in the web interface.
 
 ## Limits
 

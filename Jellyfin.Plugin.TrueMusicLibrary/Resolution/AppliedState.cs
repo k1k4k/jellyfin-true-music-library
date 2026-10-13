@@ -123,6 +123,8 @@ public sealed class LiveRules
     private readonly CreditParser _parser;
     private readonly Dictionary<string, (AppliedAlbum Album, AppliedTrack Track)> _tracks = new(StringComparer.Ordinal);
 
+    private readonly HashSet<string> _mainKeys = new(StringComparer.Ordinal);
+
     public LiveRules(AppliedState state)
     {
         State = state;
@@ -130,14 +132,20 @@ public sealed class LiveRules
         _parser = new CreditParser(state.Settings, known.Contains);
         foreach (var album in state.Albums.Values)
         {
+            _mainKeys.UnionWith(album.Mains.Select(ArtistNames.Key));
             foreach (var (id, track) in album.Tracks)
             {
                 _tracks[id] = (album, track);
             }
         }
+
+        _mainKeys.Remove(string.Empty);
     }
 
     public AppliedState State { get; }
+
+    /// <summary>Vrai si ce nom est celui d'un artiste principal (d'au moins une sortie) : il a sa place dans les listes d'artistes.</summary>
+    public bool IsMainArtist(string? name) => _mainKeys.Contains(ArtistNames.Key(name));
 
     /// <summary>Nom affiché d'une écriture (elle-même si elle est inconnue).</summary>
     public string Name(string raw)
