@@ -66,6 +66,17 @@
                     <h2 class="sectionTitle" data-i18n="settingsTitle"></h2>
 
                     <div class="selectContainer">
+                        <select is="emby-select" id="selSourceOrder" data-i18n-label="sourceOrderLabel">
+                            <option value="Providers,Tags,Folder" data-i18n="orderProvidersTagsFolder"></option>
+                            <option value="Providers,Folder,Tags" data-i18n="orderProvidersFolderTags"></option>
+                            <option value="Tags,Providers,Folder" data-i18n="orderTagsProvidersFolder"></option>
+                            <option value="Tags,Folder,Providers" data-i18n="orderTagsFolderProviders"></option>
+                            <option value="Folder,Providers,Tags" data-i18n="orderFolderProvidersTags"></option>
+                            <option value="Folder,Tags,Providers" data-i18n="orderFolderTagsProviders"></option>
+                        </select>
+                        <div class="fieldDescription" data-i18n="sourceOrderHelp"></div>
+                    </div>
+                    <div class="selectContainer">
                         <select is="emby-select" id="selCollaboration" data-i18n-label="collabLabel">
                             <option value="Both" data-i18n="collabBoth"></option>
                             <option value="FirstOnly" data-i18n="collabFirst"></option>
@@ -84,6 +95,19 @@
                             <option value="Folder" data-i18n="displayFolder"></option>
                             <option value="Tag" data-i18n="displayTag"></option>
                         </select>
+                    </div>
+                    <div class="selectContainer">
+                        <select is="emby-select" id="selNonLatin" data-i18n-label="nonLatinLabel">
+                            <option value="Latin" data-i18n="nonLatinLatin"></option>
+                            <option value="Original" data-i18n="nonLatinOriginal"></option>
+                            <option value="OriginalListed" data-i18n="nonLatinListed"></option>
+                        </select>
+                        <div class="fieldDescription" data-i18n="nonLatinHelp"></div>
+                    </div>
+                    <div class="inputContainer" id="tmlOriginalScriptContainer">
+                        <label class="textareaLabel" for="txtOriginalScript" data-i18n="originalScriptLabel"></label>
+                        <textarea is="emby-textarea" id="txtOriginalScript" rows="4"></textarea>
+                        <div class="fieldDescription" data-i18n="originalScriptHelp"></div>
                     </div>
                     <div class="inputContainer">
                         <input is="emby-input" id="txtVariousArtists" type="text" data-i18n-label="variousLabel" />
@@ -150,7 +174,7 @@
                     fr: {
                         intro: 'Un seul onglet « Artistes », avec seulement les artistes principaux des albums, singles et EP.',
                         analyzeTitle: 'Analyse',
-                        analyzeHelp: 'Calcule l\'artiste principal de chaque album avec les fournisseurs de métadonnées de la bibliothèque, dans leur ordre (puis les tags, puis le dossier). <b>Rien n\'est modifié dans Jellyfin.</b> Le premier passage interroge MusicBrainz à une requête par seconde ; les suivants utilisent le cache.',
+                        analyzeHelp: 'Calcule l\'artiste principal de chaque album avec les fournisseurs de métadonnées de la bibliothèque, les tags et le dossier, dans l\'ordre choisi dans les réglages. <b>Rien n\'est modifié dans Jellyfin.</b> Le premier passage interroge MusicBrainz à une requête par seconde ; les suivants utilisent le cache.',
                         analyze: 'Analyser',
                         repairTitle: 'Réparer',
                         repairHelp: 'Applique les artistes proposés par l\'analyse (refaite juste avant) : artistes d\'album, artistes des pistes, fiches renommées, fiches parasites supprimées. <b>Avant la première réparation, faites une sauvegarde Jellyfin</b> (Tableau de bord → Sauvegardes). Un instantané est enregistré avant toute écriture : « Restaurer » remet l\'état d\'avant. Aucun fichier audio n\'est modifié.',
@@ -166,9 +190,24 @@
                         compilationVarious: 'Toujours « Artistes variés »',
                         compilationNone: 'Aucun artiste',
                         displayLabel: 'Écriture des noms',
-                        displayMusicBrainz: 'MusicBrainz (alias latin si besoin)',
+                        displayMusicBrainz: 'MusicBrainz',
                         displayFolder: 'Nom du dossier',
                         displayTag: 'Écriture la plus fréquente dans les tags',
+                        nonLatinLabel: 'Noms non latins (japonais, chinois, coréen, cyrillique…)',
+                        nonLatinLatin: 'Transcrits en caractères latins',
+                        nonLatinOriginal: 'Écriture d\'origine',
+                        nonLatinListed: 'Écriture d\'origine pour la liste ci-dessous seulement',
+                        nonLatinHelp: 'S\'applique aux noms pris sur MusicBrainz. En caractères latins : le nom latin sous lequel l\'artiste est crédité dans la médiathèque, sinon un alias MusicBrainz (langue de la bibliothèque en priorité, puis anglais). Avec « Nom du dossier » ou « Écriture la plus fréquente dans les tags », les noms restent tels quels.',
+                        originalScriptLabel: 'Artistes qui gardent leur écriture d\'origine (un par ligne)',
+                        originalScriptHelp: 'Dans n\'importe quelle écriture : « 宇多田ヒカル » ou « Utada Hikaru » désignent la même artiste. Utilisé avec « Écriture d\'origine pour la liste ci-dessous seulement ».',
+                        sourceOrderLabel: 'Ordre des sources des artistes principaux',
+                        sourceOrderHelp: 'La première source qui donne un artiste d\'album l\'emporte. Les fournisseurs sont ceux de la bibliothèque, dans leur ordre (MusicBrainz, TheAudioDB…) ; les crédits des pistes viennent toujours de MusicBrainz quand l\'album y est reconnu.',
+                        orderProvidersTagsFolder: 'Fournisseurs → tags → dossier (recommandé)',
+                        orderProvidersFolderTags: 'Fournisseurs → dossier → tags',
+                        orderTagsProvidersFolder: 'Tags → fournisseurs → dossier',
+                        orderTagsFolderProviders: 'Tags → dossier → fournisseurs',
+                        orderFolderProvidersTags: 'Dossier → fournisseurs → tags',
+                        orderFolderTagsProviders: 'Dossier → tags → fournisseurs',
                         variousLabel: 'Nom des compilations sans dossier artiste (vide : « Artistes variés »)',
                         joinsLabel: 'Jointures d\'invité (une par ligne)',
                         whitelistLabel: 'Noms à ne jamais couper (un par ligne)',
@@ -228,7 +267,7 @@
                     en: {
                         intro: 'A single "Artists" tab, listing only the main artists of albums, singles and EPs.',
                         analyzeTitle: 'Analysis',
-                        analyzeHelp: 'Works out the main artist of every album from the library\'s metadata providers, in their order (then the tags, then the folder). <b>Nothing is changed in Jellyfin.</b> The first run queries MusicBrainz at one request per second; later runs use the cache.',
+                        analyzeHelp: 'Works out the main artist of every album from the library\'s metadata providers, the tags and the folder, in the order chosen in the settings. <b>Nothing is changed in Jellyfin.</b> The first run queries MusicBrainz at one request per second; later runs use the cache.',
                         analyze: 'Analyze',
                         repairTitle: 'Repair',
                         repairHelp: 'Applies the artists proposed by the analysis (run again right before): album artists, track artists, renamed artist entries, stray entries removed. <b>Back up Jellyfin before the first repair</b> (Dashboard → Backups). A snapshot is saved before anything is written: "Restore" brings back the previous state. No audio file is changed.',
@@ -244,9 +283,24 @@
                         compilationVarious: 'Always "Various Artists"',
                         compilationNone: 'No artist',
                         displayLabel: 'Name spelling',
-                        displayMusicBrainz: 'MusicBrainz (Latin alias if needed)',
+                        displayMusicBrainz: 'MusicBrainz',
                         displayFolder: 'Folder name',
                         displayTag: 'Most frequent spelling in the tags',
+                        nonLatinLabel: 'Non-Latin names (Japanese, Chinese, Korean, Cyrillic…)',
+                        nonLatinLatin: 'Transliterated into Latin characters',
+                        nonLatinOriginal: 'Original script',
+                        nonLatinListed: 'Original script for the list below only',
+                        nonLatinHelp: 'Applies to names taken from MusicBrainz. In Latin characters: the Latin name the artist is credited under in the library, otherwise a MusicBrainz alias (library language first, then English). With "Folder name" or "Most frequent spelling in the tags", names are kept as they are.',
+                        originalScriptLabel: 'Artists who keep their original script (one per line)',
+                        originalScriptHelp: 'In any script: "宇多田ヒカル" or "Utada Hikaru" both mean the same artist. Used with "Original script for the list below only".',
+                        sourceOrderLabel: 'Order of the main artist sources',
+                        sourceOrderHelp: 'The first source that gives an album artist wins. Providers are the library\'s, in their order (MusicBrainz, TheAudioDB…); track credits still come from MusicBrainz whenever the album is identified there.',
+                        orderProvidersTagsFolder: 'Providers → tags → folder (recommended)',
+                        orderProvidersFolderTags: 'Providers → folder → tags',
+                        orderTagsProvidersFolder: 'Tags → providers → folder',
+                        orderTagsFolderProviders: 'Tags → folder → providers',
+                        orderFolderProvidersTags: 'Folder → providers → tags',
+                        orderFolderTagsProviders: 'Folder → tags → providers',
                         variousLabel: 'Name of compilations without an artist folder (empty: "Various Artists")',
                         joinsLabel: 'Guest join phrases (one per line)',
                         whitelistLabel: 'Names never to split (one per line)',
@@ -554,6 +608,20 @@
                         .catch(function () { el.textContent = ''; });
                 }
 
+                // Ordre enregistré → une des options (sources absentes complétées dans l'ordre par défaut).
+                function sourceOrderValue(value) {
+                    var order = String(value || '').split(/[\s,;>]+/).filter(function (x) { return x; });
+                    ['Providers', 'Tags', 'Folder'].forEach(function (x) { if (order.indexOf(x) < 0) { order.push(x); } });
+                    var text = order.slice(0, 3).join(',');
+                    return page.querySelector('#selSourceOrder option[value="' + text + '"]') ? text : 'Providers,Tags,Folder';
+                }
+
+                function showOriginalScript() {
+                    page.querySelector('#tmlOriginalScriptContainer').style.display = page.querySelector('#selNonLatin').value === 'OriginalListed' ? '' : 'none';
+                }
+
+                page.querySelector('#selNonLatin').addEventListener('change', showOriginalScript);
+
                 page.addEventListener('pageshow', function () {
                     translatePage();
                     Dashboard.showLoadingMsg();
@@ -561,6 +629,10 @@
                         page.querySelector('#selCollaboration').value = config.Collaboration || 'Both';
                         page.querySelector('#selCompilation').value = config.Compilation || 'FolderArtist';
                         page.querySelector('#selDisplayName').value = config.DisplayName || 'MusicBrainz';
+                        page.querySelector('#selNonLatin').value = config.NonLatinNames || 'Latin';
+                        page.querySelector('#txtOriginalScript').value = config.OriginalScriptArtists || '';
+                        page.querySelector('#selSourceOrder').value = sourceOrderValue(config.SourceOrder);
+                        showOriginalScript();
                         page.querySelector('#txtVariousArtists').value = config.VariousArtistsName || '';
                         page.querySelector('#txtGuestJoins').value = config.GuestJoinPhrases || '';
                         page.querySelector('#txtWhitelist').value = config.NameWhitelist || '';
@@ -583,6 +655,9 @@
                         config.Collaboration = page.querySelector('#selCollaboration').value;
                         config.Compilation = page.querySelector('#selCompilation').value;
                         config.DisplayName = page.querySelector('#selDisplayName').value;
+                        config.NonLatinNames = page.querySelector('#selNonLatin').value;
+                        config.OriginalScriptArtists = page.querySelector('#txtOriginalScript').value;
+                        config.SourceOrder = page.querySelector('#selSourceOrder').value;
                         config.VariousArtistsName = page.querySelector('#txtVariousArtists').value;
                         config.GuestJoinPhrases = page.querySelector('#txtGuestJoins').value;
                         config.NameWhitelist = page.querySelector('#txtWhitelist').value;

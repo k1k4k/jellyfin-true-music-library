@@ -2,6 +2,12 @@
 
 What's new in each version, as shown in Jellyfin's plugin catalog.
 
+## 0.1.2
+
+- Fixed (Jellyfin 12): "The instance of entity type 'People' cannot be tracked…" when a track also credits a composer, lyricist… whose name has an accented capital letter (e.g. "Érick Benzi"). The track was left unchanged. Run "Repair" again to fix the tracks that failed.
+- New setting "Non-Latin names" (Japanese, Chinese, Korean, Cyrillic…): transliterated into Latin characters (as before), original script, or original script for a list of artists only.
+- New setting "Order of the main artist sources": providers, tags and folder in the order you choose, e.g. tags first to trust your own album artist tags. Track credits still come from MusicBrainz whenever the album is identified there.
+
 ## 0.1.1
 
 - Renamed "Jellyfin True Music Library", like the other k1k4k plugins.

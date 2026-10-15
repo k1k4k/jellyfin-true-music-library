@@ -36,6 +36,15 @@ public class PluginConfiguration : BasePluginConfiguration
     /// <summary>Écriture des noms : MusicBrainz (défaut), dossier, ou tags.</summary>
     public DisplayNameMode DisplayName { get; set; } = DisplayNameMode.MusicBrainz;
 
+    /// <summary>Noms MusicBrainz non latins : transcrits (défaut), écriture d'origine, ou écriture d'origine pour la liste seulement.</summary>
+    public NonLatinNameMode NonLatinNames { get; set; } = NonLatinNameMode.Latin;
+
+    /// <summary>Artistes qui gardent leur écriture d'origine (mode liste), un par ligne, dans n'importe quelle écriture.</summary>
+    public string OriginalScriptArtists { get; set; } = string.Empty;
+
+    /// <summary>Ordre des sources des artistes principaux, ex. « Providers,Tags,Folder » (défaut) ou « Tags,Providers,Folder ».</summary>
+    public string SourceOrder { get; set; } = string.Join(",", ResolverSettings.DefaultSourceOrder);
+
     /// <summary>Jointures qui annoncent un invité, une par ligne.</summary>
     public string GuestJoinPhrases { get; set; } = string.Join("\n", ResolverSettings.DefaultGuestJoinPhrases);
 
@@ -51,6 +60,9 @@ public class PluginConfiguration : BasePluginConfiguration
         Collaboration = Collaboration,
         Compilation = Compilation,
         DisplayName = DisplayName,
+        NonLatinNames = NonLatinNames,
+        OriginalScriptArtists = Lines(OriginalScriptArtists, []),
+        SourceOrder = ResolverSettings.ParseSourceOrder(SourceOrder),
         GuestJoinPhrases = Lines(GuestJoinPhrases, ResolverSettings.DefaultGuestJoinPhrases),
         NameWhitelist = Lines(NameWhitelist, []),
         VariousArtistsName = string.IsNullOrWhiteSpace(VariousArtistsName) ? Messages.VariousArtists : VariousArtistsName.Trim()

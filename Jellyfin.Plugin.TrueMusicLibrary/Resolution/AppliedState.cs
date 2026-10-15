@@ -199,30 +199,34 @@ public sealed class LiveRules
     public string? ForFolderArtist(string artistId) => State.FolderArtists.GetValueOrDefault(artistId);
 
     /// <summary>
-    /// Décision provisoire d'un album inconnu (nouvel album) : artistes d'album des tags découpés, compilation
-    /// → réglage des compilations, sinon dossier, sinon premier artiste de la piste. La tâche d'après scan la remplace.
+    /// Décision provisoire d'un album inconnu (nouvel album), sans réseau : artistes d'album des tags découpés (compilation
+    /// → réglage des compilations) et dossier, dans l'ordre des sources réglé, sinon premier artiste de la piste.
+    /// La tâche d'après scan la remplace.
     /// </summary>
     private List<string> ProvisionalMains(IReadOnlyList<string> albumArtists, string? folderArtist, IReadOnlyList<string> tagNames)
     {
         var mains = CreditParser.MainCredits(_parser.ParseTagValues(albumArtists), State.Settings.Collaboration);
-        if (mains.Count > 0 && mains.All(c => ArtistNames.IsVariousArtists(c.Name, c.Mbid)))
+        foreach (var step in State.Settings.EffectiveSourceOrder())
         {
-            return State.Settings.Compilation switch
+            if (step == SourceKind.Tags && mains.Count > 0 && mains.All(c => ArtistNames.IsVariousArtists(c.Name, c.Mbid)))
             {
-                CompilationMode.FolderArtist when folderArtist is not null => [Name(folderArtist)],
-                CompilationMode.None => [],
-                _ => [State.Settings.VariousArtistsName]
-            };
-        }
+                return State.Settings.Compilation switch
+                {
+                    CompilationMode.FolderArtist when folderArtist is not null => [Name(folderArtist)],
+                    CompilationMode.None => [],
+                    _ => [State.Settings.VariousArtistsName]
+                };
+            }
 
-        if (mains.Count > 0)
-        {
-            return Names(mains.Select(c => c.Name));
-        }
+            if (step == SourceKind.Tags && mains.Count > 0)
+            {
+                return Names(mains.Select(c => c.Name));
+            }
 
-        if (folderArtist is not null)
-        {
-            return [Name(folderArtist)];
+            if (step == SourceKind.Folder && folderArtist is not null)
+            {
+                return [Name(folderArtist)];
+            }
         }
 
         return tagNames.Take(1).ToList();

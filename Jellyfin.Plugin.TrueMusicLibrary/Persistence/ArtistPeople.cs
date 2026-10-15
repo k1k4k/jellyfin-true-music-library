@@ -38,8 +38,25 @@ internal static class ArtistPeople
     {
         var people = libraryManager.GetPeople(item)
             .Where(p => p.Type is not (PersonKind.Artist or PersonKind.AlbumArtist))
+            .Select(Fresh)
             .Concat(artistPeople)
             .ToList();
         return libraryManager.UpdatePeopleAsync(item, people, cancellationToken);
     }
+
+    /// <summary>
+    /// Copie d'un crédit gardé (compositeur…) sans son Id, comme les crédits que Jellyfin construit lui-même. Jellyfin 12
+    /// cherche les noms existants avec le <c>lower()</c> de SQLite, qui ne met en minuscules que l'ASCII : un nom comme
+    /// « Érick Benzi » n'est pas retrouvé, et le recréer avec l'Id de la ligne déjà chargée fait échouer toute l'écriture
+    /// (« The instance of entity type 'People' cannot be tracked… »).
+    /// </summary>
+    private static PersonInfo Fresh(PersonInfo person) => new()
+    {
+        Name = person.Name,
+        Role = person.Role,
+        Type = person.Type,
+        SortOrder = person.SortOrder,
+        ImageUrl = person.ImageUrl,
+        ProviderIds = new Dictionary<string, string>(person.ProviderIds ?? [], StringComparer.OrdinalIgnoreCase)
+    };
 }

@@ -14,8 +14,8 @@ public sealed class OverrideEntry
 }
 
 /// <summary>
-/// Décide les artistes principaux d'un album et les artistes de ses pistes :
-/// override ou verrou → fournisseurs dans l'ordre de la bibliothèque → tags → dossier → artiste majoritaire.
+/// Décide les artistes principaux d'un album et les artistes de ses pistes : override ou verrou, puis les sources dans l'ordre
+/// réglé (par défaut fournisseurs dans l'ordre de la bibliothèque → tags → dossier), puis l'artiste majoritaire des pistes.
 /// </summary>
 public sealed class ReleaseArtistResolver
 {
@@ -61,6 +61,7 @@ public sealed class ReleaseArtistResolver
         var tags = AnalyzeTags(album);
         IReadOnlyDictionary<string, IReadOnlyList<Credit>>? trackCredits = null;
         List<ArtistRef>? mains = null;
+        ProviderPick? provider = null;
 
         if (_overrides.TryGetValue(album.Id, out var manual) && manual.MainArtists.Count > 0)
         {
@@ -111,52 +112,26 @@ public sealed class ReleaseArtistResolver
                     continue;
                 }
 
-                decision.Source = DecisionSource.Provider;
-                decision.SourceName = result.SourceName;
-                decision.Confidence = result.Confidence;
-                if (albumMains.All(c => ArtistNames.IsVariousArtists(c.Name, c.Mbid)))
-                {
-                    decision.Flags |= DecisionFlags.Compilation;
-                    mains = CompilationArtists(album);
-                }
-                else
-                {
-                    mains = albumMains.Select(_identity.Resolve).ToList();
-                }
+                // Retenu même si une autre source passe avant : ses crédits de pistes servent toujours.
+                provider = new ProviderPick(result, albumMains);
             }
 
             break;
         }
 
-        if (mains is null && tags.Mains is { Count: > 0 })
+        foreach (var step in _settings.EffectiveSourceOrder())
         {
-            decision.Source = DecisionSource.Tags;
-            decision.Confidence = Confidence.Medium;
-            if (tags.Mains.All(c => ArtistNames.IsVariousArtists(c.Name, c.Mbid)))
+            if (mains is not null)
             {
-                decision.Flags |= DecisionFlags.Compilation;
-                mains = CompilationArtists(album);
+                break;
             }
-            else
+
+            mains = step switch
             {
-                mains = tags.Mains.Select(_identity.Resolve).ToList();
-            }
-        }
-
-        if (mains is null && tags.Heterogeneous)
-        {
-            // Pistes aux artistes d'album tous différents : dossier compilation / playlist.
-            decision.Flags |= DecisionFlags.Compilation;
-            decision.Source = album.FolderArtist is not null && _settings.Compilation == CompilationMode.FolderArtist ? DecisionSource.Folder : DecisionSource.Tags;
-            decision.Confidence = Confidence.Medium;
-            mains = CompilationArtists(album);
-        }
-
-        if (mains is null && album.FolderArtist is not null)
-        {
-            decision.Source = DecisionSource.Folder;
-            decision.Confidence = Confidence.Medium;
-            mains = [_identity.Resolve(album.FolderArtist, album.FolderArtistMbid)];
+                SourceKind.Providers => FromProvider(album, decision, provider),
+                SourceKind.Tags => FromTags(album, decision, tags),
+                _ => FromFolder(album, decision)
+            };
         }
 
         if (mains is null)
@@ -185,7 +160,7 @@ public sealed class ReleaseArtistResolver
             decision.Flags |= DecisionFlags.Collaboration;
         }
 
-        AddDisagreements(album, decision, tags);
+        AddDisagreements(album, decision, tags, provider);
 
         foreach (var track in album.Tracks)
         {
@@ -272,6 +247,64 @@ public sealed class ReleaseArtistResolver
             _ => [new ArtistRef(_settings.VariousArtistsName, ArtistNames.VariousArtistsMbid)]
         };
 
+    private List<ArtistRef>? FromProvider(AlbumSnapshot album, AlbumDecision decision, ProviderPick? provider)
+    {
+        if (provider is null)
+        {
+            return null;
+        }
+
+        decision.Source = DecisionSource.Provider;
+        decision.SourceName = provider.Result.SourceName;
+        decision.Confidence = provider.Result.Confidence;
+        if (provider.Mains.All(c => ArtistNames.IsVariousArtists(c.Name, c.Mbid)))
+        {
+            decision.Flags |= DecisionFlags.Compilation;
+            return CompilationArtists(album);
+        }
+
+        return provider.Mains.Select(_identity.Resolve).ToList();
+    }
+
+    private List<ArtistRef>? FromTags(AlbumSnapshot album, AlbumDecision decision, TagEvidence tags)
+    {
+        if (tags.Mains is { Count: > 0 })
+        {
+            decision.Source = DecisionSource.Tags;
+            decision.Confidence = Confidence.Medium;
+            if (tags.Mains.All(c => ArtistNames.IsVariousArtists(c.Name, c.Mbid)))
+            {
+                decision.Flags |= DecisionFlags.Compilation;
+                return CompilationArtists(album);
+            }
+
+            return tags.Mains.Select(_identity.Resolve).ToList();
+        }
+
+        if (tags.Heterogeneous)
+        {
+            // Pistes aux artistes d'album tous différents : dossier compilation / playlist.
+            decision.Flags |= DecisionFlags.Compilation;
+            decision.Source = album.FolderArtist is not null && _settings.Compilation == CompilationMode.FolderArtist ? DecisionSource.Folder : DecisionSource.Tags;
+            decision.Confidence = Confidence.Medium;
+            return CompilationArtists(album);
+        }
+
+        return null;
+    }
+
+    private List<ArtistRef>? FromFolder(AlbumSnapshot album, AlbumDecision decision)
+    {
+        if (album.FolderArtist is null)
+        {
+            return null;
+        }
+
+        decision.Source = DecisionSource.Folder;
+        decision.Confidence = Confidence.Medium;
+        return [_identity.Resolve(album.FolderArtist, album.FolderArtistMbid)];
+    }
+
     private TagEvidence AnalyzeTags(AlbumSnapshot album)
     {
         var votes = new Dictionary<string, (IReadOnlyList<Credit> Mains, int Count)>(StringComparer.Ordinal);
@@ -327,7 +360,7 @@ public sealed class ReleaseArtistResolver
             .Select(g => g.First())
             .FirstOrDefault();
 
-    private void AddDisagreements(AlbumSnapshot album, AlbumDecision decision, TagEvidence tags)
+    private void AddDisagreements(AlbumSnapshot album, AlbumDecision decision, TagEvidence tags, ProviderPick? provider)
     {
         var compilation = decision.Flags.HasFlag(DecisionFlags.Compilation);
         if (!compilation && album.FolderArtist is not null && decision.Source is not (DecisionSource.Folder or DecisionSource.Override)
@@ -337,10 +370,19 @@ public sealed class ReleaseArtistResolver
             decision.Flags |= DecisionFlags.Disagreement;
         }
 
-        if (decision.Source is DecisionSource.Provider && tags.Mains is { Count: > 0 } && !compilation
+        if (decision.Source is DecisionSource.Provider or DecisionSource.Folder && tags.Mains is { Count: > 0 } && !compilation
             && !tags.Mains.All(t => decision.MainArtists.Any(m => SameArtist(m, t.Name, t.Mbid))))
         {
             decision.Notes.Add(Messages.TagsDisagree(string.Join(", ", tags.Mains.Select(t => t.Name))));
+            decision.Flags |= DecisionFlags.Disagreement;
+        }
+
+        // Fournisseur passé après les tags ou le dossier (ordre des sources) et en désaccord : on le dit.
+        if (decision.Source is DecisionSource.Tags or DecisionSource.Folder && provider is not null && !compilation
+            && !provider.Mains.All(c => ArtistNames.IsVariousArtists(c.Name, c.Mbid))
+            && !provider.Mains.All(c => decision.MainArtists.Any(m => SameArtist(m, c.Name, c.Mbid))))
+        {
+            decision.Notes.Add(Messages.ProviderDisagrees(provider.Result.SourceName, string.Join(", ", provider.Mains.Select(c => _identity.Resolve(c).Name))));
             decision.Flags |= DecisionFlags.Disagreement;
         }
     }
@@ -397,4 +439,7 @@ public sealed class ReleaseArtistResolver
     };
 
     private sealed record TagEvidence(IReadOnlyList<Credit>? Mains, bool Heterogeneous);
+
+    /// <summary>Premier fournisseur qui donne des artistes d'album (release acceptée).</summary>
+    private sealed record ProviderPick(SourceResult Result, IReadOnlyList<Credit> Mains);
 }

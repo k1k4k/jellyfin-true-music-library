@@ -19,9 +19,12 @@ public sealed class ArtistIdentity
     private readonly HashSet<string> _suspicious = new(StringComparer.Ordinal);
     private readonly Dictionary<string, Dictionary<string, int>> _creditedNames = new(StringComparer.OrdinalIgnoreCase);
 
+    private readonly HashSet<string> _originalScriptKeys;
+
     public ArtistIdentity(ResolverSettings settings)
     {
         _settings = settings;
+        _originalScriptKeys = (settings.OriginalScriptArtists ?? []).Select(ArtistNames.Key).Where(k => k.Length > 0).ToHashSet(StringComparer.Ordinal);
     }
 
     /// <summary>Artiste MusicBrainz (vu dans un crédit, ou lu par MBID). Ses alias d'artiste servent aussi de clés.</summary>
@@ -194,11 +197,25 @@ public sealed class ArtistIdentity
     /// Écriture MusicBrainz : le nom sous lequel l'artiste est le plus souvent crédité dans la médiathèque
     /// (« Snoop Doggy Dogg » plutôt que son nom MusicBrainz actuel « Snoop Dogg »), puis son nom MusicBrainz ; s'il n'est pas en
     /// alphabet latin : alias dans la langue préférée, puis alias anglais principal, puis tout alias latin.
+    /// Avec <see cref="NonLatinNameMode.Original"/> (ou pour un artiste de la liste), un nom non latin garde son écriture
+    /// d'origine : le nom non latin le plus souvent crédité, sinon le nom MusicBrainz.
     /// </summary>
     public string MusicBrainzDisplayName(MbArtist artist)
     {
         var name = artist.Name ?? string.Empty;
-        if (_creditedNames.TryGetValue(artist.Id, out var credited))
+        _creditedNames.TryGetValue(artist.Id, out var credited);
+        if (!ArtistNames.IsLatin(name) && KeepsOriginalScript(artist, credited))
+        {
+            return credited?
+                .Where(c => !ArtistNames.IsLatin(c.Key))
+                .OrderByDescending(c => c.Value)
+                .ThenByDescending(c => string.Equals(c.Key, name, StringComparison.Ordinal))
+                .ThenBy(c => c.Key, StringComparer.Ordinal)
+                .Select(c => c.Key)
+                .FirstOrDefault() ?? name;
+        }
+
+        if (credited is not null)
         {
             var best = credited
                 .Where(c => ArtistNames.IsLatin(c.Key))
@@ -227,6 +244,22 @@ public sealed class ArtistIdentity
             ?? aliases.FirstOrDefault(a => string.Equals(a.Type, "Artist name", StringComparison.OrdinalIgnoreCase));
         return chosen?.Name ?? name;
     }
+
+    /// <summary>
+    /// Vrai si l'artiste garde son écriture d'origine : réglage « écriture d'origine », ou artiste de la liste (reconnu par son
+    /// nom MusicBrainz, un alias ou un nom crédité, quelle que soit l'écriture donnée dans la liste).
+    /// </summary>
+    private bool KeepsOriginalScript(MbArtist artist, Dictionary<string, int>? credited)
+        => _settings.NonLatinNames switch
+        {
+            NonLatinNameMode.Original => true,
+            NonLatinNameMode.OriginalListed => _originalScriptKeys.Count > 0
+                && new[] { artist.Name }
+                    .Concat((artist.Aliases ?? []).Select(a => a.Name))
+                    .Concat(credited?.Keys ?? Enumerable.Empty<string>())
+                    .Any(n => _originalScriptKeys.Contains(ArtistNames.Key(n))),
+            _ => false
+        };
 
     /// <summary>
     /// Le MBID est gardé si le nom correspond à l'artiste MusicBrainz : même clé que son nom ou qu'un de ses alias,

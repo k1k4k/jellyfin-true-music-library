@@ -36,6 +36,8 @@ public static class Messages
 
     public static string TagsDisagree(string tags) => T("Tags : " + tags, "Tags: " + tags);
 
+    public static string ProviderDisagrees(string provider, string artists) => T($"{provider} : {artists}", $"{provider}: {artists}");
+
     /// <summary>Nom par défaut des compilations sans dossier artiste.</summary>
     public static string VariousArtists => T("Artistes variés", "Various Artists");
 

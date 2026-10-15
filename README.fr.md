@@ -27,7 +27,7 @@ D'origine, Jellyfin met dans « Artistes » tous les noms trouvés dans un tag :
 
 ### Analyser
 
-- Pour chaque album, single ou EP, les **artistes principaux** sont pris dans les fournisseurs de métadonnées de la bibliothèque, dans leur ordre (crédits de la release MusicBrainz, puis TheAudioDB…), puis dans les tags, puis dans le dossier de l'artiste.
+- Pour chaque album, single ou EP, les **artistes principaux** sont pris dans les fournisseurs de métadonnées de la bibliothèque, dans leur ordre (crédits de la release MusicBrainz, puis TheAudioDB…), puis dans les tags, puis dans le dossier de l'artiste. Cet ordre se règle, par exemple les tags d'abord pour faire confiance à vos propres artistes d'album.
 - Les **collaborations** (`A & B`) apparaissent chez chaque artiste ; les **compilations et BO** chez l'artiste du dossier.
 - Un rapport montre, pour chaque album, les artistes actuels et proposés, la source, la confiance et les désaccords avec les tags et le dossier. Rien n'est modifié dans Jellyfin.
 - **Choix manuel** : dépliez un album du rapport pour imposer ses artistes principaux.
@@ -35,7 +35,8 @@ D'origine, Jellyfin met dans « Artistes » tous les noms trouvés dans un tag :
 ### Réparer
 
 - Artistes d'album = artistes principaux ; artistes des pistes découpés (`A;B`, `feat.`, `&`…), invités gardés sur leurs pistes.
-- Une seule fiche par artiste, au nom sous lequel MusicBrainz le crédite le plus souvent dans votre médiathèque ; les fiches parasites comme `A;B` sont supprimées.
+- Une seule fiche par artiste, au nom sous lequel MusicBrainz le crédite le plus souvent dans votre médiathèque ; les fiches parasites comme `A;B` sont supprimées. Les écritures qui ne diffèrent que par la casse, les accents ou la ponctuation sont fusionnées, tout comme les noms dans une autre écriture que MusicBrainz relie au même artiste (« 宇多田ヒカル » / « Utada Hikaru »).
+- Les noms non latins (japonais, chinois, coréen, cyrillique…) sont transcrits en caractères latins, ou gardent leur écriture d'origine : pour tous les artistes, ou seulement pour ceux que vous listez.
 - Un instantané est enregistré avant toute écriture. **Restaurer** remet tout comme Jellyfin l'avait.
 
 ### Ensuite
@@ -114,6 +115,9 @@ La première analyse interroge MusicBrainz à une requête par seconde (environ 
 - **Rien n'a changé après « Analyser »** : normal, l'analyse ne modifie rien. « Réparer » l'applique.
 - **Des invités apparaissent encore dans « Artistes » ou dans la recherche** : la liste unique ne s'applique qu'une fois la médiathèque réparée. La page de configuration indique si la persistance est active ; rechargez la page web (`Ctrl+F5`).
 - **Un album a le mauvais artiste principal** : dépliez-le dans le rapport pour voir la source et les désaccords, puis imposez ses artistes à la main. Le choix s'applique à la prochaine analyse et à la prochaine réparation, et au prochain scan une fois la médiathèque réparée.
+- **« The instance of entity type 'People' cannot be tracked… »** (Jellyfin 12, versions avant la 0.1.2) : une piste crédite un compositeur ou un parolier dont le nom a une majuscule accentuée. Mettez le plugin à jour, puis relancez « Réparer ».
+- **Des noms japonais, chinois ou cyrilliques transcrits en latin** : réglez « Noms non latins » sur « Écriture d'origine », ou gardez l'écriture d'origine pour les seuls artistes listés, puis analysez et réparez de nouveau.
+- **Séparateurs de tags personnalisés de Jellyfin** : inutiles, le plugin découpe lui-même `A;B`, `feat.`, `&`… et ne coupe jamais les noms qu'il connaît (artistes MusicBrainz, dossiers, liste « Noms à ne jamais couper »). Si les séparateurs de Jellyfin coupent un nom comme `AC/DC`, le plugin risque de ne pas pouvoir le recoller, sauf sur les albums reconnus par MusicBrainz.
 - **L'onglet « Artistes de l'album » est toujours là** : rechargez la page web (`Ctrl+F5`) et vérifiez le réglage « Cacher l'onglet Artistes de l'album ».
 - **Pour tout défaire** : « Restaurer » dans la page de configuration, puis désinstallez si vous le souhaitez.
 

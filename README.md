@@ -27,7 +27,7 @@ Out of the box, Jellyfin lists in "Artists" every name found in a tag: `Artist A
 
 ### Analyze
 
-- For each album, single or EP, the **main artists** are taken from the library's metadata providers, in their configured order (MusicBrainz release credits, then TheAudioDB…), then from the tags, then from the artist folder.
+- For each album, single or EP, the **main artists** are taken from the library's metadata providers, in their configured order (MusicBrainz release credits, then TheAudioDB…), then from the tags, then from the artist folder. This order can be changed, e.g. tags first to trust your own album artist tags.
 - **Collaborations** (`A & B`) show up under each artist; **compilations and soundtracks** under the folder artist.
 - A report shows, for every album, the current and proposed artists, the source, the confidence and the disagreements with the tags and the folder. Nothing is changed in Jellyfin.
 - **Manual choice**: unfold an album in the report to impose its main artists.
@@ -35,7 +35,8 @@ Out of the box, Jellyfin lists in "Artists" every name found in a tag: `Artist A
 ### Repair
 
 - Album artists = main artists; track artists split (`A;B`, `feat.`, `&`…), guests kept on their tracks.
-- One entry per artist, named the way MusicBrainz credits it most often in your library; stray entries such as `A;B` are removed.
+- One entry per artist, named the way MusicBrainz credits it most often in your library; stray entries such as `A;B` are removed. Spellings differing only by case, accents or punctuation are merged, and so are names in another script when MusicBrainz links them to the same artist ("宇多田ヒカル" / "Utada Hikaru").
+- Non-Latin names (Japanese, Chinese, Korean, Cyrillic…) are transliterated into Latin characters, or keep their original script: for every artist, or only for the ones you list.
 - A snapshot is saved before anything is written. **Restore** puts everything back the way Jellyfin had it.
 
 ### Afterwards
@@ -114,6 +115,9 @@ The first analysis queries MusicBrainz at one request per second (about 4 minute
 - **Nothing changed after "Analyze"**: normal, the analysis is read-only. "Repair" applies it.
 - **Guests still show up in "Artists" or in the search**: the single list only applies once the library is repaired. The settings page shows whether the persistence is active; reload the web page (`Ctrl+F5`).
 - **An album has the wrong main artist**: unfold it in the report to see the source and the disagreements, then impose its artists by hand. It applies at the next analysis and repair, and at the next scan once the library is repaired.
+- **"The instance of entity type 'People' cannot be tracked…"** (Jellyfin 12, versions before 0.1.2): a track credits a composer or lyricist whose name has an accented capital letter. Update the plugin, then run "Repair" again.
+- **Japanese, Chinese or Cyrillic names turned into Latin transliterations**: set "Non-Latin names" to "Original script", or keep the original script only for the artists you list, then analyze and repair again.
+- **Jellyfin's custom tag delimiters**: not needed, the plugin splits `A;B`, `feat.`, `&`… itself and never splits the names it knows (MusicBrainz artists, folders, the "Names never to split" list). If Jellyfin's delimiters split a name like `AC/DC`, the plugin may not be able to put it back together, except on albums identified on MusicBrainz.
 - **The "Album Artists" tab is still there**: reload the web page (`Ctrl+F5`) and check the setting "Hide the Album Artists tab".
 - **To undo everything**: "Restore" on the settings page, then uninstall if you wish.
 
