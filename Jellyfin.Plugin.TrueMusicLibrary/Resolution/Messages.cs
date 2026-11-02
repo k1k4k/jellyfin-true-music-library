@@ -14,6 +14,10 @@ public static class Messages
     // Remarques du rapport
     public static string MusicBrainzUnavailable => T("MusicBrainz indisponible pour cette analyse.", "MusicBrainz unavailable for this analysis.");
 
+    public static string MusicBrainzUnreachable => T(
+        "MusicBrainz injoignable depuis le serveur (plusieurs requêtes de suite sans réponse) : analyse terminée avec le cache, les autres fournisseurs, les tags et le dossier. Vérifiez l'accès du serveur à MusicBrainz, puis relancez l'analyse.",
+        "MusicBrainz unreachable from the server (several requests in a row without an answer): analysis finished with the cache, the other providers, the tags and the folder. Check the server's access to MusicBrainz, then analyze again.");
+
     public static string ProviderUnavailable(string provider) => T($"Fournisseur « {provider} » indisponible pour cette analyse : ignoré.", $"Provider \"{provider}\" unavailable for this analysis: skipped.");
 
     public static string AnalysisError(string error) => T("Erreur pendant l'analyse : " + error, "Error during the analysis: " + error);

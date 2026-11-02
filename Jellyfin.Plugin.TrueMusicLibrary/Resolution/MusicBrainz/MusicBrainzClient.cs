@@ -29,6 +29,15 @@ public sealed class MusicBrainzOptions
 
     /// <summary>Cache seulement, aucune requête réseau.</summary>
     public bool Offline { get; init; }
+
+    /// <summary>Délai d'un essai (connexion et réponse).</summary>
+    public TimeSpan RequestTimeout { get; init; } = TimeSpan.FromSeconds(30);
+
+    /// <summary>
+    /// Requêtes de suite sans aucune réponse (délai dépassé, connexion impossible) après lesquelles MusicBrainz est jugé
+    /// injoignable : plus aucune requête jusqu'à la fin de l'analyse, qui se termine avec le cache et les autres sources.
+    /// </summary>
+    public int UnreachableAfter { get; init; } = 5;
 }
 
 /// <summary>Compteurs d'une analyse.</summary>
@@ -41,11 +50,16 @@ public sealed class MusicBrainzStats
     public int NotFound { get; set; }
 
     public int Failures { get; set; }
+
+    /// <summary>Vrai si MusicBrainz a été jugé injoignable pendant l'analyse (voir <see cref="MusicBrainzOptions.UnreachableAfter"/>).</summary>
+    public bool Unreachable { get; set; }
 }
 
 /// <summary>
 /// Client minimal de l'API MusicBrainz WS/2 : une requête par release (crédits de l'album et des pistes,
 /// type de sortie, alias des artistes), limite de débit globale, cache disque, réessais sur 503.
+/// Sans réponse du serveur (délai dépassé, connexion impossible), une requête n'est réessayée qu'une fois, et après
+/// <see cref="MusicBrainzOptions.UnreachableAfter"/> requêtes de suite dans ce cas, MusicBrainz n'est plus interrogé.
 /// </summary>
 public sealed class MusicBrainzClient
 {
@@ -53,12 +67,19 @@ public sealed class MusicBrainzClient
     private const string ReleaseGroupIncludes = "artist-credits+aliases";
     private const string ArtistIncludes = "aliases";
 
+    /// <summary>Essais quand le serveur répond « occupé » (503, 429).</summary>
+    private const int MaxAttempts = 4;
+
+    /// <summary>Essais quand le serveur ne répond pas du tout.</summary>
+    private const int MaxNetworkAttempts = 2;
+
     private static readonly SemaphoreSlim _gate = new(1, 1);
     private static DateTime _lastRequestUtc = DateTime.MinValue;
 
     private readonly HttpClient _http;
     private readonly MusicBrainzOptions _options;
     private readonly ILogger _logger;
+    private int _requestsWithoutAnswer;
 
     public MusicBrainzClient(HttpClient http, MusicBrainzOptions options, ILogger logger)
     {
@@ -96,22 +117,28 @@ public sealed class MusicBrainzClient
             return cached;
         }
 
-        if (_options.Offline)
+        if (_options.Offline || Stats.Unreachable)
         {
             return null;
         }
 
         var url = $"{_options.Server.TrimEnd('/')}/ws/2/{entity}/{key}?inc={includes}&fmt=json";
-        for (var attempt = 0; attempt < 4; attempt++)
+        var attempts = 0;
+        var networkAttempts = 0;
+        while (attempts < MaxAttempts && networkAttempts < MaxNetworkAttempts)
         {
+            attempts++;
             await WaitTurnAsync(cancellationToken).ConfigureAwait(false);
+            using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            timeout.CancelAfter(_options.RequestTimeout);
             try
             {
                 using var request = new HttpRequestMessage(HttpMethod.Get, url);
                 request.Headers.UserAgent.ParseAdd(_options.UserAgent);
                 request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                using var response = await _http.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                using var response = await _http.SendAsync(request, timeout.Token).ConfigureAwait(false);
                 Stats.Requests++;
+                _requestsWithoutAnswer = 0;
 
                 if (response.StatusCode == HttpStatusCode.NotFound)
                 {
@@ -122,12 +149,12 @@ public sealed class MusicBrainzClient
 
                 if (response.StatusCode is HttpStatusCode.ServiceUnavailable or HttpStatusCode.TooManyRequests)
                 {
-                    await Task.Delay(TimeSpan.FromSeconds(2 << attempt), cancellationToken).ConfigureAwait(false);
+                    await Task.Delay(TimeSpan.FromSeconds(2 << (attempts - 1)), cancellationToken).ConfigureAwait(false);
                     continue;
                 }
 
                 response.EnsureSuccessStatusCode();
-                var text = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+                var text = await response.Content.ReadAsStringAsync(timeout.Token).ConfigureAwait(false);
                 WriteCache(cacheFile, text);
                 return JsonSerializer.Deserialize<T>(text);
             }
@@ -135,20 +162,38 @@ public sealed class MusicBrainzClient
             {
                 throw;
             }
-            catch (Exception ex) when (ex is HttpRequestException or JsonException or TaskCanceledException)
+            catch (Exception ex) when (IsNoAnswer(ex))
             {
-                _logger.LogWarning(ex, "MusicBrainz {Entity} {Mbid} : échec de la requête (essai {Attempt})", entity, key, attempt + 1);
-                if (attempt == 3)
-                {
-                    break;
-                }
+                // Délai dépassé ou connexion impossible : le message suffit, la pile n'apprend rien.
+                networkAttempts++;
+                _logger.LogWarning("MusicBrainz {Entity} {Mbid} : pas de réponse de {Server} (essai {Attempt}) : {Error}", entity, key, _options.Server, attempts, NoAnswerMessage(ex));
+            }
+            catch (Exception ex) when (ex is HttpRequestException or JsonException)
+            {
+                _logger.LogWarning(ex, "MusicBrainz {Entity} {Mbid} : échec de la requête (essai {Attempt})", entity, key, attempts);
             }
         }
 
         Stats.Failures++;
-        _logger.LogWarning("MusicBrainz {Entity} {Mbid} : abandon après 4 essais", entity, key);
+        _logger.LogWarning("MusicBrainz {Entity} {Mbid} : abandon après {Attempts} essais", entity, key, attempts);
+        if (networkAttempts == MaxNetworkAttempts && ++_requestsWithoutAnswer >= _options.UnreachableAfter)
+        {
+            Stats.Unreachable = true;
+            _logger.LogWarning(
+                "MusicBrainz injoignable ({Server}) : {Count} requêtes de suite sans réponse. L'analyse continue sans MusicBrainz (cache, autres fournisseurs, tags, dossier) ; la prochaine analyse réessaiera",
+                _options.Server,
+                _requestsWithoutAnswer);
+        }
+
         return null;
     }
+
+    /// <summary>Pas de réponse du serveur : délai dépassé, ou connexion impossible (pas de code HTTP).</summary>
+    private static bool IsNoAnswer(Exception ex)
+        => ex is OperationCanceledException or TimeoutException || (ex is HttpRequestException { StatusCode: null } && ex.InnerException is not JsonException);
+
+    private string NoAnswerMessage(Exception ex)
+        => ex is OperationCanceledException ? $"délai de {_options.RequestTimeout.TotalSeconds:0} s dépassé" : ex.Message;
 
     private async Task WaitTurnAsync(CancellationToken cancellationToken)
     {

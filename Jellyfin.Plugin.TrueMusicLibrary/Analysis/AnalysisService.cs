@@ -2,6 +2,7 @@ using System.Reflection;
 using Jellyfin.Plugin.TrueMusicLibrary.Resolution.MusicBrainz;
 using Jellyfin.Plugin.TrueMusicLibrary.Resolution;
 using Jellyfin.Plugin.TrueMusicLibrary.Store;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using Microsoft.Extensions.Logging;
 
@@ -50,7 +51,9 @@ public sealed class AnalysisService
         var libraries = _reader.ReadMusicLibraries(cancellationToken);
         progress.Report(5);
 
-        var client = new MusicBrainzClient(_httpClientFactory.CreateClient(), MusicBrainzOptionsFromJellyfin(allowStaleCache), _logger);
+        // Client MusicBrainz de Jellyfin : même connexion que son propre fournisseur, IPv6 et IPv4 essayés en parallèle
+        // (« Happy Eyeballs »). Avec un client .NET ordinaire, un IPv6 annoncé mais injoignable (Docker, NAS) bloque chaque requête.
+        var client = new MusicBrainzClient(_httpClientFactory.CreateClient(NamedClient.MusicBrainz), MusicBrainzOptionsFromJellyfin(allowStaleCache), _logger);
         var runner = new AnalysisRunner(settings, client, _logger);
         var overrides = _store.LoadOverrides();
         var report = new AnalysisReport

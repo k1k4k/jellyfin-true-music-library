@@ -2,6 +2,10 @@
 
 What's new in each version, as shown in Jellyfin's plugin catalog.
 
+## 0.1.3
+
+- Fixed: the analysis could take days when the server could not reach MusicBrainz properly (typically IPv6 announced but not working, in Docker or on a NAS): every request waited 100 seconds, four times. MusicBrainz is now reached through Jellyfin's own connection (the one its MusicBrainz provider uses, which follows Jellyfin's IPv6 setting and falls back to IPv4), a request gives up after 30 seconds, and after a few requests in a row without an answer the analysis goes on without MusicBrainz and says so in the report.
+
 ## 0.1.2
 
 - Fixed (Jellyfin 12): "The instance of entity type 'People' cannot be tracked…" when a track also credits a composer, lyricist… whose name has an accented capital letter (e.g. "Érick Benzi"). The track was left unchanged. Run "Repair" again to fix the tracks that failed.

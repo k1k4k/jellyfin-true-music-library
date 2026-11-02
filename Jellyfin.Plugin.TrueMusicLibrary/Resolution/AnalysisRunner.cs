@@ -92,6 +92,11 @@ public sealed class AnalysisRunner
                 identity.AddMusicBrainzArtist(await _musicBrainz.GetArtistAsync(missing[i], cancellationToken).ConfigureAwait(false));
                 progress?.Report(60 + (10.0 * (i + 1) / Math.Max(1, missing.Count)));
             }
+
+            if (_musicBrainz.Stats.Unreachable)
+            {
+                notes.Add(Messages.MusicBrainzUnreachable);
+            }
         }
 
         var resolver = new ReleaseArtistResolver(settings, identity, parser, sources, overrides);

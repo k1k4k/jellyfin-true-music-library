@@ -118,6 +118,7 @@ The first analysis queries MusicBrainz at one request per second (about 4 minute
 - **"The instance of entity type 'People' cannot be tracked…"** (Jellyfin 12, versions before 0.1.2): a track credits a composer or lyricist whose name has an accented capital letter. Update the plugin, then run "Repair" again.
 - **Japanese, Chinese or Cyrillic names turned into Latin transliterations**: set "Non-Latin names" to "Original script", or keep the original script only for the artists you list, then analyze and repair again.
 - **Jellyfin's custom tag delimiters**: not needed, the plugin splits `A;B`, `feat.`, `&`… itself and never splits the names it knows (MusicBrainz artists, folders, the "Names never to split" list). If Jellyfin's delimiters split a name like `AC/DC`, the plugin may not be able to put it back together, except on albums identified on MusicBrainz.
+- **The analysis is very slow, or the log shows MusicBrainz timeouts** (versions before 0.1.3): update the plugin. Since 0.1.3, if the server cannot reach MusicBrainz the analysis finishes with the other sources and the report says "MusicBrainz unreachable": check that Jellyfin itself can fetch MusicBrainz metadata ("Refresh metadata" on an album), then analyze again.
 - **The "Album Artists" tab is still there**: reload the web page (`Ctrl+F5`) and check the setting "Hide the Album Artists tab".
 - **To undo everything**: "Restore" on the settings page, then uninstall if you wish.
 
