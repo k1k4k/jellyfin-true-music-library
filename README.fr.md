@@ -42,6 +42,7 @@ D'origine, Jellyfin met dans « Artistes » tous les noms trouvés dans un tag :
 ### Ensuite
 
 - **La médiathèque reste réparée** : les scans et « Remplacer toutes les métadonnées » gardent les artistes décidés, sans réseau pendant le scan, et les nouveaux albums sont résolus juste après chaque scan.
+- **Ajouts sans scan** : avec la surveillance en temps réel de Jellyfin, les albums ajoutés, retirés ou retaggés sont traités environ 2 minutes après le dernier changement, fiches artiste en double comprises, sans attendre le prochain scan de la bibliothèque.
 - **Une seule liste « Artistes » pour tous les clients** : le serveur sert « Artistes » comme « Artistes de l'album », les invités n'apparaissent plus dans la recherche ni dans les listes d'artistes des autres clients, et leur page reste accessible depuis leurs pistes.
 - L'interface web cache l'onglet « Artistes de l'album », devenu un doublon.
 

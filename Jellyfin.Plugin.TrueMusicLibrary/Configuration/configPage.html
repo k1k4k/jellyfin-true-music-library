@@ -128,6 +128,13 @@
                         </label>
                         <div class="fieldDescription checkboxFieldDescription" data-i18n="persistenceHelp"></div>
                     </div>
+                    <div class="checkboxContainer checkboxContainer-withDescription">
+                        <label class="emby-checkbox-label">
+                            <input id="chkAfterChanges" type="checkbox" is="emby-checkbox" />
+                            <span data-i18n="afterChangesLabel"></span>
+                        </label>
+                        <div class="fieldDescription checkboxFieldDescription" data-i18n="afterChangesHelp"></div>
+                    </div>
 
                     <div class="checkboxContainer checkboxContainer-withDescription">
                         <label class="emby-checkbox-label">
@@ -213,6 +220,8 @@
                         whitelistLabel: 'Noms à ne jamais couper (un par ligne)',
                         persistenceLabel: 'Garder la médiathèque réparée',
                         persistenceHelp: 'Après « Réparer » : les scans et les actualisations appliquent ces réglages, sans réseau pendant le scan ; les nouveaux albums sont résolus juste après (MusicBrainz compris). Sans effet tant que la médiathèque n\'a pas été réparée.',
+                        afterChangesLabel: 'Mettre à jour après les ajouts',
+                        afterChangesHelp: 'Quand la surveillance en temps réel de Jellyfin ajoute, retire ou relit de la musique : les nouveaux albums sont résolus et les fiches artiste en double nettoyées environ 2 minutes après le dernier changement, sans attendre le prochain scan. Demande la surveillance en temps réel sur la bibliothèque, et « Garder la médiathèque réparée ».',
                         rewriteLabel: 'Onglet unique côté serveur',
                         rewriteHelp: 'Une fois la médiathèque réparée, la liste « Artistes » est servie comme « Artistes de l\'album », pour tous les clients. Effet immédiat.',
                         guestsLabel: 'Invités retirés de la recherche et des listes',
@@ -243,7 +252,7 @@
                         noAnalysis: 'Pas encore d\'analyse.',
                         analysisOf: 'Analyse du {0} — MusicBrainz : {1} requêtes, {2} en cache, {3} échecs.',
                         taskAnalyze: 'Analyse', taskRepair: 'Réparation', taskRestore: 'Restauration',
-                        lastRepair: 'Dernière réparation :', lastRestore: 'Dernière restauration :', lastScan: 'Dernière mise à jour après scan :', colon: ' : ',
+                        lastRepair: 'Dernière réparation :', lastRestore: 'Dernière restauration :', lastScan: 'Dernière mise à jour après scan :', lastAdditions: 'Dernière mise à jour après des ajouts :', colon: ' : ',
                         lastSummary: '{0} albums, {1} pistes, {2} fiches renommées, {3} créées, {4} supprimées',
                         skipped: ', {0} ignorés',
                         remaining: ' ; reste à changer : {0} albums, {1} pistes',
@@ -306,6 +315,8 @@
                         whitelistLabel: 'Names never to split (one per line)',
                         persistenceLabel: 'Keep the library repaired',
                         persistenceHelp: 'After "Repair": scans and refreshes apply these settings, without network access during the scan; new albums are resolved right after (MusicBrainz included). No effect until the library has been repaired.',
+                        afterChangesLabel: 'Update after additions',
+                        afterChangesHelp: 'When Jellyfin\'s real time monitoring adds, removes or rereads music: new albums are resolved and duplicate artist entries cleaned up about 2 minutes after the last change, without waiting for the next scan. Needs real time monitoring on the library, and "Keep the library repaired".',
                         rewriteLabel: 'Single tab on the server',
                         rewriteHelp: 'Once the library is repaired, the "Artists" list is served as "Album Artists", for every client. Immediate effect.',
                         guestsLabel: 'Guests removed from search and lists',
@@ -336,7 +347,7 @@
                         noAnalysis: 'No analysis yet.',
                         analysisOf: 'Analysis of {0} — MusicBrainz: {1} requests, {2} cached, {3} failed.',
                         taskAnalyze: 'Analysis', taskRepair: 'Repair', taskRestore: 'Restore',
-                        lastRepair: 'Last repair:', lastRestore: 'Last restore:', lastScan: 'Last update after a scan:', colon: ': ',
+                        lastRepair: 'Last repair:', lastRestore: 'Last restore:', lastScan: 'Last update after a scan:', lastAdditions: 'Last update after additions:', colon: ': ',
                         lastSummary: '{0} albums, {1} tracks, {2} entries renamed, {3} created, {4} removed',
                         skipped: ', {0} skipped',
                         remaining: '; left to change: {0} albums, {1} tracks',
@@ -523,7 +534,7 @@
                 function loadLastOperation() {
                     var el = page.querySelector('#tmlLastOperation');
                     ApiClient.fetch({ url: ApiClient.getUrl('TrueMusicLibrary/Operation/Last'), type: 'GET', dataType: 'json' }).then(function (r) {
-                        var label = t({ Restore: 'lastRestore', Scan: 'lastScan' }[r.Operation] || 'lastRepair');
+                        var label = t({ Restore: 'lastRestore', Scan: 'lastScan', Additions: 'lastAdditions' }[r.Operation] || 'lastRepair');
                         el.innerHTML = '<p class="fieldDescription">' + esc(label + ' ' + date(r.FinishedAt || r.StartedAt) + ' — '
                             + t('lastSummary', r.AlbumsUpdated, r.TracksUpdated, r.ArtistsRenamed, r.ArtistsCreated, r.ArtistsDeleted)
                             + (r.Skipped ? t('skipped', r.Skipped) : '')
@@ -638,6 +649,7 @@
                         page.querySelector('#txtWhitelist').value = config.NameWhitelist || '';
                         page.querySelector('#chkRewrite').checked = config.EnableArtistsRouteRewrite !== false;
                         page.querySelector('#chkPersistence').checked = config.EnablePersistence !== false;
+                        page.querySelector('#chkAfterChanges').checked = config.UpdateAfterChanges !== false;
                         page.querySelector('#chkHideGuests').checked = config.HideGuestArtists !== false;
                         page.querySelector('#chkHideTab').checked = config.HideAlbumArtistsTab !== false;
                         Dashboard.hideLoadingMsg();
@@ -663,6 +675,7 @@
                         config.NameWhitelist = page.querySelector('#txtWhitelist').value;
                         config.EnableArtistsRouteRewrite = page.querySelector('#chkRewrite').checked;
                         config.EnablePersistence = page.querySelector('#chkPersistence').checked;
+                        config.UpdateAfterChanges = page.querySelector('#chkAfterChanges').checked;
                         config.HideGuestArtists = page.querySelector('#chkHideGuests').checked;
                         config.HideAlbumArtistsTab = page.querySelector('#chkHideTab').checked;
                         ApiClient.updatePluginConfiguration(pluginId, config).then(function (result) {

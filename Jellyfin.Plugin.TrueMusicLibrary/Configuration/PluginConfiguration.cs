@@ -27,6 +27,15 @@ public class PluginConfiguration : BasePluginConfiguration
     /// </summary>
     public bool EnablePersistence { get; set; } = true;
 
+    /// <summary>
+    /// Avec la persistance : quand la surveillance en temps réel de Jellyfin ajoute, retire ou relit de la musique, la
+    /// médiathèque est remise à jour après un moment de calme, sans attendre le prochain scan. Activé par défaut.
+    /// </summary>
+    public bool UpdateAfterChanges { get; set; } = true;
+
+    /// <summary>Moment de calme (secondes) après le dernier changement détecté avant la mise à jour. Pas dans l'interface.</summary>
+    public int UpdateAfterChangesDelaySeconds { get; set; } = 120;
+
     /// <summary>Collaborations « A &amp; B » : les deux principaux (défaut) ou le premier seulement.</summary>
     public CollaborationMode Collaboration { get; set; } = CollaborationMode.Both;
 

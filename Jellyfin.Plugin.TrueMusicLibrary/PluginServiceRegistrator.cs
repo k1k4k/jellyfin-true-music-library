@@ -27,6 +27,9 @@ public class PluginServiceRegistrator : IPluginServiceRegistrator
         serviceCollection.AddSingleton<AnalysisService>();
         serviceCollection.AddSingleton<Apply.LibraryApplier>();
         serviceCollection.AddSingleton<PersistenceState>();
+        serviceCollection.AddSingleton<PersistenceUpdater>();
+        serviceCollection.AddSingleton<LibraryChangeWatcher>();
+        serviceCollection.AddHostedService(provider => provider.GetRequiredService<LibraryChangeWatcher>());
         serviceCollection.AddSingleton<IStartupFilter, ArtistsRouteRewriteStartupFilter>();
         serviceCollection.AddSingleton<IStartupFilter, ScriptInjectionStartupFilter>();
         serviceCollection.AddSingleton<GuestArtistsResultFilter>();

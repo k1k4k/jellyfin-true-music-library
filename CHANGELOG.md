@@ -2,6 +2,10 @@
 
 What's new in each version, as shown in Jellyfin's plugin catalog.
 
+## 0.2.0
+
+- New: albums added while Jellyfin's real time monitoring is on are handled without waiting for a library scan. About 2 minutes after the last change, new albums are resolved (MusicBrainz included), guests split, duplicate artist entries removed (Jellyfin can create the same artist twice while it is still recognizing a new artist folder), and removed or retagged albums are followed too. Setting "Update after additions", on by default; needs "Keep the library repaired" and real time monitoring on the library.
+
 ## 0.1.3
 
 - Fixed: the analysis could take days when the server could not reach MusicBrainz properly (typically IPv6 announced but not working, in Docker or on a NAS): every request waited 100 seconds, four times. MusicBrainz is now reached through Jellyfin's own connection (the one its MusicBrainz provider uses, which follows Jellyfin's IPv6 setting and falls back to IPv4), a request gives up after 30 seconds, and after a few requests in a row without an answer the analysis goes on without MusicBrainz and says so in the report.

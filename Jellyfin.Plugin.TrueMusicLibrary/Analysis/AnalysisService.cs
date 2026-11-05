@@ -149,6 +149,9 @@ public static class TaskGate
 {
     private static readonly SemaphoreSlim _gate = new(1, 1);
 
+    /// <summary>Vrai pendant une opération True Music Library (analyse, réparation, restauration, mise à jour).</summary>
+    public static bool IsBusy => _gate.CurrentCount == 0;
+
     public static async Task<IDisposable> EnterAsync(CancellationToken cancellationToken)
     {
         if (!await _gate.WaitAsync(TimeSpan.Zero, cancellationToken).ConfigureAwait(false))

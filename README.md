@@ -42,6 +42,7 @@ Out of the box, Jellyfin lists in "Artists" every name found in a tag: `Artist A
 ### Afterwards
 
 - **The library stays repaired**: scans and "Replace all metadata" keep the decided artists, without network access during the scan, and new albums are resolved right after each scan.
+- **Albums added without a scan**: with Jellyfin's real time monitoring, new, removed or retagged albums are handled about 2 minutes after the last change, duplicate artist entries included, without waiting for the next library scan.
 - **One "Artists" list for every client**: the server serves "Artists" as "Album Artists", guests no longer show up in search results nor in the artist lists of other clients, and their page stays reachable from their tracks.
 - The web interface hides the duplicate "Album Artists" tab.
 
