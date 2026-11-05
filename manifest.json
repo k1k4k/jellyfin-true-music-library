@@ -9,6 +9,14 @@
     "imageUrl": "https://raw.githubusercontent.com/k1k4k/jellyfin-true-music-library/main/icon.png",
     "versions": [
       {
+        "version": "0.2.0.0",
+        "changelog": "- New: albums added while Jellyfin's real time monitoring is on are handled without waiting for a library scan. About 2 minutes after the last change, new albums are resolved (MusicBrainz included), guests split, duplicate artist entries removed (Jellyfin can create the same artist twice while it is still recognizing a new artist folder), and removed or retagged albums are followed too. Setting \"Update after additions\", on by default; needs \"Keep the library repaired\" and real time monitoring on the library.",
+        "targetAbi": "12.0.0.0",
+        "sourceUrl": "https://github.com/k1k4k/jellyfin-true-music-library/releases/download/v0.2.0/jellyfin-true-music-library_0.2.0.0_jf12.zip",
+        "checksum": "5bc618ff4f8db5ed01a2c123418783ad",
+        "timestamp": "2026-11-05T18:26:26Z"
+      },
+      {
         "version": "0.1.3.0",
         "changelog": "- Fixed: the analysis could take days when the server could not reach MusicBrainz properly (typically IPv6 announced but not working, in Docker or on a NAS): every request waited 100 seconds, four times. MusicBrainz is now reached through Jellyfin's own connection (the one its MusicBrainz provider uses, which follows Jellyfin's IPv6 setting and falls back to IPv4), a request gives up after 30 seconds, and after a few requests in a row without an answer the analysis goes on without MusicBrainz and says so in the report.",
         "targetAbi": "12.0.0.0",
