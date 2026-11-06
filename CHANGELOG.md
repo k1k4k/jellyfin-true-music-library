@@ -2,6 +2,11 @@
 
 What's new in each version, as shown in Jellyfin's plugin catalog.
 
+## 0.2.1
+
+- Update after additions: the plugin now waits until Jellyfin has read the added tracks and albums (tags, MusicBrainz identifiers, cover art) before deciding. When Jellyfin's refresh queue was busy, the plugin could decide from the folder name alone and do it again a few minutes later.
+- Fixed (Jellyfin 12): albums and tracks rewritten at every repair, scan or update when Jellyfin keeps an artist under another capitalization (e.g. "CyberPriest" vs "CYBERPRIEST"). Nothing visible changed, but these writes were useless.
+
 ## 0.2.0
 
 - New: albums added while Jellyfin's real time monitoring is on are handled without waiting for a library scan. About 2 minutes after the last change, new albums are resolved (MusicBrainz included), guests split, duplicate artist entries removed (Jellyfin can create the same artist twice while it is still recognizing a new artist folder), and removed or retagged albums are followed too. Setting "Update after additions", on by default; needs "Keep the library repaired" and real time monitoring on the library.

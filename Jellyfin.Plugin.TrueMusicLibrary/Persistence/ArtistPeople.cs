@@ -26,9 +26,24 @@ internal static class ArtistPeople
             .Concat(artists.Select(n => new PersonInfo { Name = n, Type = PersonKind.Artist }))
             .ToList();
 
-    /// <summary>Comparaison sans ordre : Jellyfin ne rend pas toujours les People dans l'ordre où ils ont été écrits.</summary>
+    /// <summary>
+    /// Comparaison sans ordre (Jellyfin ne rend pas toujours les People dans l'ordre où ils ont été écrits). Mêmes crédits Artist / AlbumArtist. Les noms se comparent comme Jellyfin les retrouve dans sa table People : sans
+    /// tenir compte de la casse ASCII (le <c>lower()</c> de SQLite). Une personne déjà connue garde l'écriture de sa première
+    /// apparition (« CyberPriest » demandé « CYBERPRIEST ») : sans cela, chaque mise à jour réécrirait les mêmes pistes.
+    /// </summary>
     public static bool SameSet(IEnumerable<PersonInfo> a, IEnumerable<PersonInfo> b)
-        => a.Select(p => (p.Name, p.Type)).ToHashSet().SetEquals(b.Select(p => (p.Name, p.Type)));
+        => a.Select(p => (PersonKey(p.Name), p.Type)).ToHashSet().SetEquals(b.Select(p => (PersonKey(p.Name), p.Type)));
+
+    /// <summary>Nom tel que Jellyfin le cherche : lettres ASCII en minuscules, le reste inchangé.</summary>
+    public static string PersonKey(string? name)
+        => string.Create((name ?? string.Empty).Length, name ?? string.Empty, static (span, source) =>
+        {
+            for (var i = 0; i < source.Length; i++)
+            {
+                var c = source[i];
+                span[i] = c is >= 'A' and <= 'Z' ? (char)(c + 32) : c;
+            }
+        });
 
     public static List<PersonSnapshot> Snapshot(IEnumerable<PersonInfo> people)
         => people.Select(p => new PersonSnapshot { Name = p.Name, Type = p.Type.ToString(), Role = p.Role, SortOrder = p.SortOrder }).ToList();
